@@ -2,7 +2,7 @@ const fetch = require("node-fetch-v2");
 const { JSDOM } = require('jsdom');
 const fs = require('fs');
 const path = require('path');
-const { parseOptions } = require("../ai-modules/openai/barejs/helpers");
+const { parseOptions } = require("../ai-modules/openai/plainjs/helpers");
 
 // Reuse the parser from earlier (included here for convenience)
 function parseProxyDB(html) {

@@ -1,10 +1,10 @@
 const { generate: dd_generate } = require("../ai-modules/duckduckgo/llms");
 const { generate: openai_generate } = require("../ai-modules/openai/pup/chatgpt");
-const { runRequestServer: openai_barejs_generate } = require("../ai-modules/openai/barejs/interfaces/server-interfaces");
-const { runRequestServerQueue: openai_barejs_generate_workers } = require("../ai-modules/openai/barejs/workers");
+const { runRequestServer: openai_plainjs_generate } = require("../ai-modules/openai/plainjs/interfaces/server-interfaces");
+const { runRequestServerQueue: openai_plainjs_generate_workers } = require("../ai-modules/openai/plainjs/workers");
 
 const { providers } = require("./constants");
-const { openaiRequestModeServer } = require("../ai-modules/openai/barejs/interfaces/server-interfaces");
+const { openaiRequestModeServer } = require("../ai-modules/openai/plainjs/interfaces/server-interfaces");
 
 function selectorByProvider(provider, opts={use_workers: false}){
 
@@ -32,13 +32,13 @@ function selectorByProvider(provider, opts={use_workers: false}){
 
         if(opts?.use_workers){
         const generate_ = (prompt, model, stream, options={})=>{
-            return openai_barejs_generate_workers(JSON.parse(prompt).pop().content, undefined, stream, options)
+            return openai_plainjs_generate_workers(JSON.parse(prompt).pop().content, undefined, stream, options)
         }
         return generate_
         }
         
         const generate_ = (prompt, model, stream, options={})=>{
-            return openai_barejs_generate(JSON.parse(prompt).pop().content, undefined, stream, options)
+            return openai_plainjs_generate(JSON.parse(prompt).pop().content, undefined, stream, options)
         }
         
         return generate_

@@ -7,7 +7,7 @@ const http = require("http");
 
 const { providers, DEFAULT_PROVIDER } = require("./helpers/constants");
 const { reloadPage } = require("./ai-modules/openai/pup/chatgpt");
-const { clearChat } = require("./ai-modules/openai/barejs/interfaces/server-interfaces");
+const { clearChat } = require("./ai-modules/openai/plainjs/interfaces/server-interfaces");
 const { selectorByProvider } = require("./helpers/scope");
 const { checkNodeVersion } = require("./helpers/generic");
 

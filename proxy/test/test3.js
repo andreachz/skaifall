@@ -1,7 +1,7 @@
 // const {runCurlImpersonate} = require('./impersonate-api');
 // const fetch = require('node-fetch')
 
-// const {runCurlImpersonate} = require('../ai-modules/openai/barejs/impersonate-api')
+// const {runCurlImpersonate} = require('../ai-modules/openai/plainjs/impersonate-api')
 
 const { JSDOM } = require('jsdom');
 const fs = require('fs')

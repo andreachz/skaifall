@@ -1,5 +1,5 @@
-const { getRandomUserAgent } = require('../ai-modules/openai/barejs/helpers.js');
-const {runCurlImpersonate} = require('../ai-modules/openai/barejs/impersonate-api');
+const { getRandomUserAgent } = require('../ai-modules/openai/plainjs/helpers.js');
+const {runCurlImpersonate} = require('../ai-modules/openai/plainjs/impersonate-api');
 const store = require('./store.js');
 
 

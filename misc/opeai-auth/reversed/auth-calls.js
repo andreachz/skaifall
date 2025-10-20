@@ -135,7 +135,7 @@ fetch("https://auth.openai.com/api/accounts/password/verify", {
     "x-datadog-trace-id": "4821247572729012694"
   },
   "referrer": "https://auth.openai.com/log-in/password",
-  "body": "{\"password\":\"ai-modules\\\\openai\\\\barejsq\",\"username\":\"biyome1300@fanwn.com\"}",
+  "body": "{\"password\":\"ai-modules\\\\openai\\\\plainjsq\",\"username\":\"biyome1300@fanwn.com\"}",
   "method": "POST",
   "mode": "cors",
   "credentials": "include"
