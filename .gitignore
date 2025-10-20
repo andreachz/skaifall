@@ -5,3 +5,9 @@ build/
 coverage/
 .vscode/
 .DS_Store
+
+utils/css
+utils/files
+utils/images
+utils/IMAGES_
+utils/res
