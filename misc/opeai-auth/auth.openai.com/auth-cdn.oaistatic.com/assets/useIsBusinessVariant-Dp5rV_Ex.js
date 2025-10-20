@@ -1,0 +1,2 @@
+import{r as n,j as s}from"./index-DjeUAv9f.js";const o=n.createContext(null),a=({signupSource:e,promo:r,children:u})=>s.jsx(o.Provider,{value:{signupSource:e,promo:r},children:u});function t(){return n.useContext(o)}const p=()=>{const{signupSource:e,promo:r}=t()??{signupSource:"",promo:""};return e!=="business"?{enabled:!1,promo:""}:{enabled:!0,promo:r}};export{a as S,p as u};
+//# sourceMappingURL=useIsBusinessVariant-Dp5rV_Ex.js.map

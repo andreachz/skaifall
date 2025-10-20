@@ -1,0 +1,16 @@
+{
+  "name": "minbrow",
+  "version": "1.0.0",
+  "main": "minbrow.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "import-http": "^0.3.1",
+    "jsdom": "^26.1.0"
+  },
+  "type": "module"
+}

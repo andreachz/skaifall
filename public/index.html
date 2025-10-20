@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Skaifall</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f1115;
+      --card: #151823;
+      --muted: #9aa4b2;
+      --text: #eef2f7;
+      --accent: #4f8cff;
+      --border: #232839;
+      --ok: #21c07a;
+      --err: #ff6b6b;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+    header, footer {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.2);
+      backdrop-filter: blur(4px);
+    }
+    footer { border-top: 1px solid var(--border); border-bottom: none; color: var(--muted); font-size: 13px; }
+    .info-liner { border-bottom: none; color: var(--muted); font-size: 13px; }
+    main { padding: 18px; max-width: max(800px, 60vw); width: 100%; margin: 0 auto; }
+    .title { font-weight: 650; letter-spacing: .2px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+    }
+    .row { display: grid; gap: 10px; }
+    .row.cols-3 { grid-template-columns: 1fr auto auto; align-items: end; }
+    .row.cols-2 { grid-template-columns: 1fr auto; align-items: end; }
+    label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 6px; }
+    input[type="text"], textarea, select {
+      width: 100%;
+      background: #0f1320;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      outline: none;
+    }
+    input[type="text"]:focus, textarea:focus, select:focus { border-color: var(--accent); }
+    textarea {
+      min-height: 80px;
+      max-height: 50vh;
+      resize: vertical;
+      font-family: inherit;
+    }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+    button {
+      background: var(--accent);
+      border: 1px solid transparent;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.secondary { background: transparent; border-color: var(--border); color: var(--text); }
+    button.ghost { background: transparent; border-color: transparent; color: var(--muted); }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    .status { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; }
+    .dot.ok { background: var(--ok); }
+    .dot.err { background: var(--err); }
+    .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.2); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: -3px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Chat UI */
+    .chat {
+      display: grid; gap: 10px; align-content: start;
+      /* max-height: 40vh;  */
+      max-height: calc( 100vh - 438px);
+      height: 100%; overflow: auto; padding: 8px; border-radius: 8px;
+      background: #0b0f1a; border: 1px solid var(--border);
+      font-family: var(--mono);
+    }
+    .msg { display: grid; gap: 6px; }
+    .bubble {
+      max-width: 600px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      /* white-space: pre-wrap;  */
+      word-wrap: break-word;
+    }
+    .user .bubble { margin-left: auto; background: #13192b; font-family: sans-serif; }
+    .assistant .bubble { margin-right: auto; background: #192139; font-family: sans-serif;}
+    .role { font-size: 12px; color: var(--muted); }
+    .typing { opacity: .8; font-style: italic; }
+
+    .topbar { display: flex; gap: 10px; align-items: end; margin-bottom: 10px; }
+    .grow { flex: 1; }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .greeting {opacity: 0.5; font-family: sans-serif; font-size: 28px; margin: 10px; justify-self: center;}
+    .neatbtn{background: transparent; cursor: pointer; opacity: 80%;}
+    .neatbtn:hover{filter: brightness(150%)}
+    .neatbtn:active{filter: brightness(80%)}
+    .code-box{margin-top: 8px; background-color: var(--bg); border: 2px solid var(--border); display: flex; flex-direction: column; border-radius: 4px;}
+    .code-content{display: flex; padding: 8px; font-size: small; overflow: auto;}
+    .code-content code{white-space: pre-wrap;}
+    .code-header{font-size: small; border-bottom: 1px solid var(--border); background: rgba(255, 255, 255, 0.05); padding: 6px; padding-bottom: 4px;}
+    .bubble h1, .bubble h2, .bubble h3, .bubble h4, ul, li {
+      margin: 4px 0 4px 0px
+    }
+
+    /* For WebKit browsers (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 6px;               /* Thin scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;  /* No background */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #777;         /* Gray thumb */
+  border-radius: 3px;       /* Rounded edges */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;         /* Darker on hover */
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;                  /* Makes it slim */
+  scrollbar-color: #888 transparent;      /* Thumb | Track */
+}
+
+    a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+a:hover {
+  color: #7aaeff; /* lighter accent */
+  text-decoration: underline;
+  text-decoration-color: rgba(127, 170, 255, 0.6);
+}
+
+a:active {
+  color: #3a6edc; /* slightly darker accent on click */
+}
+
+a:visited {
+  color: #9aa4b2; /* muted color for visited links */
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">Skaifall</div>
+    <div>
+      <span>LLM APIs Unleashed</span> &#183;
+      <a href="docs">API Docs</a>
+      <!-- <span class="info-liner">Backend: POST <code>/generate</code> with <code>{ model: "gpt-4o-mini|gpt-5-mini|meta-llama/Llama-4-Scout-17B-16E-Instruct|mistralai/Mistral-Small-24B-Instruct-2501", messages: [{role: "user|assistant", content: "hello"},...] }</code>.  -->
+        <!-- Available models: <code>'gpt-4o-mini', 'gpt-5-mini', 'meta-llama/Llama-4-Scout-17B-16E-Instruct','mistralai/Mistral-Small-24B-Instruct-2501'</code></span> -->
+    </div>
+  </header>
+
+  <main style="display: flex; flex-direction: column;">
+    <section class="card" style="margin-top:14px; height: 100%; display: flex; flex-direction: column;" aria-label="chat">
+      <div style="display: flex; justify-content: space-between;">
+      <label>Conversation</label>
+      <div>
+        <!-- &#183;  -->
+        <span id="clear" class="neatbtn" style="font-size: small;">Clear</span>
+      </div>
+      
+      </div>
+      <div class="chat" id="chat" aria-live="polite">
+
+      </div>
+    </section>
+    
+    <section class="card" style="margin-top:14px" aria-label="controls">
+      <div class="topbar" hidden>
+
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="prompt">Message</label>
+          <textarea autofocus id="prompt" placeholder="Type your message… (Shift+Enter = newline, Enter = send)"></textarea>
+          <!-- <div class="hint">Sends as <code>messages</code> array for chat. No persistence.</div> -->
+        </div>
+      </div>
+
+      <div class="row cols-2" style="margin-top:10px">
+        <div class="status" id="status"><span class="dot" id="statusDot"></span><span id="statusText">Ready</span></div>
+        <div class="controls">
+                  <div class="grow">
+          <select id="model" style="width: fit-content;">
+            <option disabled value="a">OpenAI</option>
+            <option selected value="openai-chatgpt">GPT-4o</option>
+            <option disabled value="b">DuckDuckGo Chat</option>
+            <option value="gpt-4o-mini">gpt-4o-mini</option>
+            <option value="gpt-5-mini">gpt-5-mini</option>
+            <option value="meta-llama/Llama-4-Scout-17B-16E-Instruct">Llama-4-Scout-17B-16E-Instruct</option>
+            <option value="mistralai/Mistral-Small-24B-Instruct-2501">Mistral-Small-24B-Instruct-2501</option>
+          </select>
+        </div>
+          <button id="send">Send</button>
+          <!-- <button id="clear" class="secondary">Clear conversation</button> -->
+          <button id="abort" class="secondary">Stop</button>
+          <button id="copy" class="ghost" title="Copy conversation">Copy</button>
+        </div>
+      </div>
+    </section>
+
+
+  </main>
+
+  <footer>
+    -
+    <!-- Backend: POST <code>/generate</code> with <code>{ model, messages }</code> -->
+  </footer>
+
+  <script>
+    const $ = (sel) => document.querySelector(sel);
+    const modelInput = $("#model");
+    const promptEl = $("#prompt");
+    const sendBtn = $("#send");
+    const clearBtn = $("#clear");
+    const abortBtn = $("#abort");
+    const copyBtn = $("#copy");
+    const chatEl = $("#chat");
+    const statusText = $("#statusText");
+    const statusDot = $("#statusDot");
+
+    const available_models = [ 'openai-chatgpt', 'gpt-4o-mini', 'gpt-5-mini', 'meta-llama/Llama-4-Scout-17B-16E-Instruct','mistralai/Mistral-Small-24B-Instruct-2501'];
+
+    function getProviderFromModel(model){
+      if(model.includes('openai')){
+        return 'openai'
+      }
+      return 'duckduckgo'
+    }
+
+    let isLoadingState = false
+    // In-memory chat state (lost on refresh)
+    const messages = [];
+
+    messages.push(...JSON.parse(localStorage.getItem('__messages') || '[]'))
+    renderChat()
+
+    // Persist chosen model
+    modelInput.onchange = (e)=>{
+      localStorage.setItem('llm_model', e.target.value);
+    }
+    const savedModel = localStorage.getItem("llm_model") || available_models[0];
+    if (savedModel) modelInput.value = savedModel;
+    modelInput.dispatchEvent(new Event('change'))
+
+    function setStatus(text, kind = "idle") {
+      statusText.textContent = text;
+      statusDot.className = "dot";
+      if (kind === "ok") statusDot.classList.add("ok");
+      else if (kind === "err") statusDot.classList.add("err");
+    }
+
+    function getLoading(){
+      return isLoadingState
+    }
+    function setLoading(isLoading) {
+      sendBtn.disabled = isLoading;
+      if (isLoading) {
+        setStatus("Generating…", "idle");
+        sendBtn.innerHTML = '<span class="spinner"></span> Sending';
+        isLoadingState=true
+      } else {
+        setStatus("Ready", "idle");
+        sendBtn.textContent = "Send";
+        isLoadingState=false
+      }
+    }
+
+    function scrollToBottom() {
+      queueMicrotask(() => { chatEl.scrollTop = chatEl.scrollHeight; });
+    }
+
+function markdownToHTML(md) {
+  // Extract <code>...</code> blocks
+  const codeBlocks = [];
+  md = md.replace(/<code>[\s\S]*?<\/code>/gim, (match) => {
+    codeBlocks.push(match);
+    return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+  });
+
+  // Markdown replacements
+  md = md
+    // Headings
+    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+    // Bold & italic
+    .replace(/\*\*\*(.*?)\*\*\*/gim, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+    // Links
+    .replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>")
+    // Images
+    .replace(/\!\[(.*?)\]\((.*?)\)/gim, "<img alt='$1' src='$2' />")
+    // Lists (still naive)
+    .replace(/^\s*-\s+(.*$)/gim, '<ul><li>$1</li></ul>')
+    .replace(/^\s*\d+\.\s+(.*$)/gim, '<ol><li>$1</li></ol>')
+    // Line breaks
+    .replace(/\n$/gim, '<br>');
+
+  // Restore code blocks
+  md = md.replace(/__CODE_BLOCK_(\d+)__/g, (_, i) => codeBlocks[i]);
+
+  return md;
+}
+
+function convertCodeFencesToHtml(text) {
+  return text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+    return `
+    <div class="code-box">
+    <span class="code-header" style="display:flex; justify-content: space-between"><span>${lang||''}</span><span class="neatbtn" onclick="navigator.clipboard.writeText(event.target.closest('.code-box').querySelector('code').innerText)">copy</span></span>
+    <div class="code-content">
+    <code>${code.trim()}</code>
+    </div>
+    </div>`;
+  }).replace(/`([^`]+)`/g, "<code>$1</code>")
+  ;
+}
+function sanitizeHtml(html) {
+  // Tags we consider dangerous
+  const blockedTags = [
+    "script", "img", "video", "audio", "iframe", 
+    "object", "embed", "input", "button", "form", 
+    "link", "meta", "style"
+  ];
+
+  // Regex to match opening/closing tags
+  const regex = new RegExp(
+    `<\\/?\\s*(${blockedTags.join("|")})(\\s+[^>]*)?>`,
+    "gi"
+  );
+
+  // Replace dangerous tags with escaped text
+  return html.replace(regex, match => {
+    return escapeHtml(match); // from earlier
+  });
+}
+
+function escapeHtml(text = "") {
+  const map = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+    "`": "&#96;"
+  };
+  return String(text).replace(/[&<>"'`]/g, ch => map[ch]);
+}
+
+    function renderChat() {
+      chatEl.innerHTML = "";
+      if(!messages.length)
+      chatEl.innerHTML = `<span class="greeting">What's on your mind?</span>`;
+      
+      messages.forEach((m) => {
+        const wrap = document.createElement('div');
+        wrap.className = `msg ${m.role}`;
+        const role = document.createElement('div');
+        role.className = 'role';
+        role.textContent = m.role === 'user' ? 'You' : 'Assistant';
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        // bubble.textContent = m.content;
+        bubble.innerHTML = sanitizeHtml(markdownToHTML(convertCodeFencesToHtml(m.content)));
+        wrap.appendChild(role);
+        wrap.appendChild(bubble);
+        chatEl.appendChild(wrap);
+      });
+      scrollToBottom();
+    }
+
+async function callGenerate(model, messages, signal) {
+  const res = await fetch('/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model, messages, stream: false, provider: getProviderFromModel(model) }),
+    signal, // <-- important: tie fetch to the abort signal
+  });
+  // Expecting { response: string, available_models?: string[] } (keep backward-compatible shape)
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data?.ok === false) {
+    const msg = data?.error || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  return data;
+}
+
+/**
+ * Stream tokens from /generate-stream (SSE over POST).
+ *
+ * @param {string} model
+ * @param {Array<{role:string, content:string}>} messages
+ * @param {Object} [opts]
+ * @param {AbortSignal} [opts.signal]             - Abort to cancel the request.
+ * @param {(chunk: string) => void} [opts.onMessage] - Called for each streamed chunk.
+ * @param {(payload: any) => void} [opts.onEvent] - Called for non-default SSE events (e.g., "done", "error").
+ * @returns {Promise<{ response: string, ok: true }>} Resolves with the final text.
+ */
+async function callGenerateStream(model, messages, opts = {}) {
+  const { signal, onMessage, onEvent } = opts;
+
+  const res = await fetch('/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model, messages, stream: true, provider: getProviderFromModel(model) }),
+    signal,
+  });
+
+  // Expect an SSE response
+  if (!res.ok) {
+    // Try to parse JSON error (server may send JSON on early failure)
+    let errText = `HTTP ${res.status}`;
+    try {
+      const data = await res.clone().json();
+      if (data && data.error) errText = data.error;
+    } catch { /* ignore */ }
+    throw new Error(errText);
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder('utf-8');
+  let buffer = '';
+  let finalText = '';
+  let doneExplicit = false;
+  
+  const processEventBlock = (block) => {
+    // Parse a single SSE event block (lines until blank line)
+    // Collect fields
+    let event = 'message'; // default event name if not provided
+    const dataLines = [];
+
+    for (const line of block.split(/\r?\n/)) {
+      if (!line) continue;
+      if (line.startsWith('event:')) {
+        event = line.slice(6).trim() || 'message';
+      } else if (line.startsWith('data:')) {
+        dataLines.push(line.slice(5).trimStart());
+      }
+      // ignore id:, retry:, comments, etc.
+    }
+
+    if (dataLines.length === 0) return;
+
+    // Server sends one JSON per data line; process each
+    for (const dl of dataLines) {
+      if (!dl || dl === '[DONE]') continue;
+      let payload = null;
+      try {
+        payload = JSON.parse(dl);
+      } catch {
+        // Not JSON: treat as raw text chunk
+        if (event === 'message') {
+          finalText += dl;
+          onMessage?.(dl);
+        } else {
+          onEvent?.({ event, data: dl });
+        }
+        continue;
+      }
+
+      // Known payload shapes from our server:
+      // { message: "<chunk>" }
+      // event: done   data: {}
+      // data: { done: true, text: "<full>" }
+      // event: error  data: { ok:false, error:"..." }
+
+      if (event === 'error' || payload?.ok === false) {
+        const errMsg = payload?.error || 'stream_error';
+        onEvent?.({ event: 'error', data: payload });
+        throw new Error(errMsg);
+      }
+
+      if (payload?.message != null) {
+        const chunk = String(payload.message);
+        finalText += chunk;
+        onMessage?.(chunk);
+      } else if (payload?.done) {
+        // Some servers send a final JSON with the full text
+        if (typeof payload.text === 'string') {
+          finalText = payload.text; // trust server's final if provided
+        }
+        doneExplicit = true;
+      } else if (event === 'done') {
+        doneExplicit = true;
+        onEvent?.({ event: 'done', data: payload });
+      } else {
+        // Unknown but valid JSON -> forward as custom event
+        onEvent?.({ event, data: payload });
+      }
+    }
+  };
+
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+
+      // Split into SSE events by blank line. Keep the last partial in buffer.
+      const parts = buffer.split(/\r?\n\r?\n/);
+      buffer = parts.pop() || '';
+
+      for (const block of parts) {
+        processEventBlock(block);
+      }
+    }
+
+    // Flush trailing partial block (if any)
+    if (buffer.trim().length) {
+      processEventBlock(buffer);
+    }
+
+    // If the server never sent an explicit done but we finished reading, consider it done
+    if (!doneExplicit) {
+      onEvent?.({ event: 'done', data: {} });
+    }
+
+    return { response: finalText, ok: true };
+  } catch (err) {
+    // Surface error to caller
+    throw err instanceof Error ? err : new Error(String(err));
+  } finally {
+    try { reader.releaseLock?.(); } catch {}
+  }
+}
+
+async function callGenerateStream_2(model, messages, opts = {}) {
+  const { signal, onMessage, onEvent } = opts;
+
+  if (signal?.aborted) {
+    throw new DOMException('Aborted', 'AbortError');
+  }
+
+  const res = await fetch('/generate-stream', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model, messages }),
+    signal,
+  }).catch((err) => {
+    // Normalize AbortError so callers can distinguish it
+    if (err?.name === 'AbortError') {
+      throw new DOMException('Aborted', 'AbortError');
+    }
+    throw err;
+  });
+
+  // Early HTTP error path
+  if (!res.ok) {
+    let errText = `HTTP ${res.status}`;
+    try {
+      const data = await res.clone().json();
+      if (data && data.error) errText = data.error;
+    } catch {}
+    throw new Error(errText);
+  }
+
+  // Some environments (older Safari/Node polyfills) don't stream bodies
+  if (!res.body || !res.body.getReader) {
+    const text = await res.text();
+    // Try to parse as a single event block
+    try {
+      const maybe = JSON.parse(text);
+      if (maybe?.message != null) {
+        if (onMessage) await onMessage(String(maybe.message));
+        if (onEvent) await onEvent({ event: 'done', data: {} });
+        return { response: String(maybe.message), ok: true };
+      }
+    } catch {}
+    if (onMessage) await onMessage(text);
+    if (onEvent) await onEvent({ event: 'done', data: {} });
+    return { response: text, ok: true };
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder('utf-8');
+  let buffer = '';
+  let finalText = '';
+  let doneExplicit = false;
+
+  const safeOnMessage = async (chunk) => {
+    if (!onMessage) return;
+    // Await to propagate rejections
+    await onMessage(chunk);
+  };
+
+  const safeOnEvent = async (evt) => {
+    if (!onEvent) return;
+    await onEvent(evt);
+  };
+
+  const processEventBlock = async (block) => {
+    let event = 'message';
+    const dataLines = [];
+
+    for (const line of block.split(/\r?\n/)) {
+      if (!line) continue;
+      if (line.startsWith('event:')) {
+        event = line.slice(6).trim() || 'message';
+      } else if (line.startsWith('data:')) {
+        dataLines.push(line.slice(5).trimStart());
+      }
+    }
+
+    if (dataLines.length === 0) return;
+
+    for (const dl of dataLines) {
+      if (!dl || dl === '[DONE]') continue;
+
+      let payload = null;
+      try {
+        payload = JSON.parse(dl);
+      } catch {
+        if (event === 'message') {
+          finalText += dl;
+          await safeOnMessage(dl);            // <- await here
+        } else {
+          await safeOnEvent({ event, data: dl }); // <- await here
+        }
+        continue;
+      }
+
+      if (event === 'error' || payload?.ok === false) {
+        const errMsg = payload?.error || 'stream_error';
+        await safeOnEvent({ event: 'error', data: payload });
+        throw new Error(errMsg);
+      }
+
+      if (payload?.message != null) {
+        const chunk = String(payload.message);
+        finalText += chunk;
+        await safeOnMessage(chunk); // <- await here
+      } else if (payload?.done) {
+        if (typeof payload.text === 'string') {
+          finalText = payload.text;
+        }
+        doneExplicit = true;
+      } else if (event === 'done') {
+        doneExplicit = true;
+        await safeOnEvent({ event: 'done', data: payload }); // <- await here
+      } else {
+        await safeOnEvent({ event, data: payload }); // <- await here
+      }
+    }
+  };
+
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+
+      const parts = buffer.split(/\r?\n\r?\n/);
+      buffer = parts.pop() || '';
+
+      for (const block of parts) {
+        await processEventBlock(block); // <- await to propagate errors
+      }
+    }
+
+    if (buffer.trim().length) {
+      await processEventBlock(buffer); // <- await to propagate errors
+    }
+
+    if (!doneExplicit) {
+      await safeOnEvent({ event: 'done', data: {} }); // <- await
+    }
+
+    return { response: finalText, ok: true };
+  } catch (err) {
+    // Normalize AbortError thrown by reader/fetch
+    if (err?.name === 'AbortError') {
+      throw new DOMException('Aborted', 'AbortError');
+    }
+    // throw new Error(err)
+    throw err instanceof Error ? err : new Error(String(err));
+  } finally {
+    try { reader.releaseLock?.(); } catch {}
+  }
+}
+
+
+    function asPlaintextTranscript() {
+      return messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
+    }
+
+    function addTypingIndicator() {
+      const wrap = document.createElement('div');
+      wrap.className = 'msg assistant';
+      const role = document.createElement('div');
+      role.className = 'role';
+      role.textContent = 'Assistant';
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble typing';
+      // bubble.innerHTML = '<span class="spinner"></span> typing…';
+      bubble.innerHTML = '<span class="spinner"></span> generating...';
+      wrap.appendChild(role); wrap.appendChild(bubble);
+      chatEl.appendChild(wrap);
+      scrollToBottom();
+      return wrap; // allow removal
+    }
+
+    function removeCharAt(str, index) {
+  return str.substring(0, index) + str.substring(index + 1);
+}
+let currentController = null; // Track the active AbortController
+const useStream = true
+function getUnclosedFenceLanguage(str) {
+  // Match all code fences with optional language label
+  const fences = [...str.matchAll(/```(\w+)?/g)];
+
+  // If no fences → nothing open
+  if (fences.length === 0) return null;
+
+  // If odd number of fences → last one is unclosed
+  if (fences.length % 2 === 1) {
+    // Capture group [1] is the language label (may be undefined)
+    return fences[fences.length - 1][1] || ""; 
+  }
+
+  // Otherwise, all fences are balanced
+  return null;
+}
+
+async function onSend() {
+  if (getLoading()) {
+    // Optionally, abort the previous request when sending a new one
+    // if (currentController) {
+    //   currentController.abort();
+    // }
+    return;
+  }
+
+  // setInterval(()=>{console.log(currentController && currentController.signal.aborted)},500)
+  const content = promptEl.value.trim();
+  const model = modelInput.value.trim();
+  if (!content) return setStatus('Please enter a message', 'err');
+  if (!model) return setStatus('Please choose or type a model.', 'err');
+
+  localStorage.setItem('llm_model', model);
+
+  // Push user message and render
+  messages.push({ role: 'user', content });
+  renderChat();
+  promptEl.value = '';
+
+  setLoading(true);
+  const typingEl = addTypingIndicator();
+
+  // Create a fresh controller for this request
+  currentController = new AbortController();
+  console.log(currentController)
+  if(useStream){
+
+    try{
+      let ichunk=0
+      let tickindex = -1
+   
+      const { response } = await callGenerateStream(
+      model,
+      messages,
+      {
+        signal: currentController.signal,
+        onMessage: (chunk) => {
+          chunk = chunk.replace(/^__DATA:\s?/, "")
+          // called for each partial piece
+          console.log(chunk);
+          typingEl.remove();
+          if(ichunk==0){
+          messages.push({ role: 'assistant', content: chunk });
+          }
+          else{
+            messages[messages.length-1].content+=chunk
+            // if(tickindex>-1){
+            //   messages[messages.length-1].content=removeCharAt(messages[messages.length-1].content, tickindex)
+            //   tickindex=-1
+            // }
+            // messages[messages.length-1].content+=chunk
+
+            // if(getUnclosedFenceLanguage( messages[messages.length-1].content ) && messages[messages.length-1].content.length-1 > tickindex){
+
+            //     messages[messages.length-1].content+='`'
+            //     tickindex=messages[messages.length-1].content.length-1
+            // }
+          }
+          ichunk++
+          renderChat()
+        },
+        onEvent: (evt) => {
+          console.log("\n[event]", evt);
+        }
+      }
+    )
+    // .catch(err=>{
+    //       console.error("Stream error:", err);
+    //       setStatus(err.message || 'Request failed', 'err');
+    //       setLoading(false);
+    //       currentController = null; // clear reference
+    // })
+    ;
+
+    console.log("\n\nFinal:", response);
+    localStorage.setItem('__messages', JSON.stringify(messages));
+    setLoading(false)
+    setStatus('Done', 'ok');
+  } catch (err) {
+    console.error("Stream error:", err);
+    if(typingEl)
+    typingEl.remove();
+    setLoading(false);
+    setStatus(err.message || 'Request failed', 'err');
+
+  }
+  finally{
+    if(typingEl)
+    typingEl.remove();
+    // setLoading(false);
+    currentController = null; // clear reference
+  }
+
+  return
+  }
+
+
+  try {
+    const data = await callGenerate(model, messages, currentController.signal);
+    // Prefer `data.response`, fallback to stringified data
+    const assistantText =
+      typeof data?.response === 'string'
+        ? data.response
+        : typeof data === 'string'
+        ? data
+        : JSON.stringify(data, null, 2);
+
+    typingEl.remove();
+    messages.push({ role: 'assistant', content: assistantText });
+    localStorage.setItem('__messages', JSON.stringify(messages));
+    renderChat();
+    setStatus('Done', 'ok');
+  } catch (err) {
+    typingEl.remove();
+    if (err.name === 'AbortError') {
+      // messages.push({ role: 'assistant', content: `⏹️ Request aborted.` });
+      setStatus('Aborted', 'warn');
+    } else {
+      messages.push({
+        role: 'assistant',
+        content: `⚠️ Error: ${err.message || 'Request failed'}`,
+      });
+      setStatus(err.message || 'Request failed', 'err');
+    }
+    renderChat();
+  } finally {
+    setLoading(false);
+    currentController = null; // clear reference
+
+  }
+}
+
+
+    sendBtn.addEventListener('click', onSend);
+    clearBtn.addEventListener('click', () => {
+      if(!confirm('Are you sure?')){return}
+      messages.length = 0;
+      chatEl.innerHTML = '';
+      promptEl.value = '';
+      localStorage.setItem('__messages','')
+      fetch('/clear').then(d=>{return d.json()}).then(d=>{console.log(d)}).catch(e=>{console.error(e)})
+      setStatus('Cleared.');
+    });
+      abortBtn.addEventListener('click', () => {
+    if (currentController) {
+      currentController.abort();
+    }
+  });
+    copyBtn.addEventListener('click', async () => {
+      const txt = asPlaintextTranscript();
+      if (!txt) return setStatus('Nothing to copy.', 'err');
+      try {
+        await navigator.clipboard.writeText(txt);
+        setStatus('Conversation copied.', 'ok');
+      } catch {
+        setStatus('Copy failed.', 'err');
+      }
+    });
+
+    // Keyboard shortcuts: Ctrl/Cmd+Enter = send, Shift+Enter = newline
+    promptEl.addEventListener('keydown', (e) => {
+    //   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      if ((!e.shiftKey) && e.key === 'Enter') {
+        e.preventDefault();
+        onSend();
+        if(document.querySelector('#prompt').value!='')
+        document.querySelector('.greeting').style.display='none'
+      }
+    });
+
+    // Autosize textarea (simple)
+    function autosize(e) {
+      e.target.style.height = 'auto';
+      e.target.style.height = Math.min(e.target.scrollHeight, window.innerHeight * 0.5) + 'px';
+    }
+    promptEl.addEventListener('input', autosize);
+    window.addEventListener('load', () => autosize({ target: promptEl }));
+  </script>
+</body>
+</html>

@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>LLM Interface</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f1115;
+      --card: #151823;
+      --muted: #9aa4b2;
+      --text: #eef2f7;
+      --accent: #4f8cff;
+      --border: #232839;
+      --ok: #21c07a;
+      --err: #ff6b6b;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 600px at 10% -10%, #1b2030 0%, transparent 60%) no-repeat,
+                  radial-gradient(1000px 500px at 110% -20%, #1a2335 0%, transparent 60%) no-repeat,
+                  var(--bg);
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+    header, footer {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.2);
+      backdrop-filter: blur(4px);
+    }
+    footer { border-top: 1px solid var(--border); border-bottom: none; color: var(--muted); font-size: 13px; }
+    .info-liner { border-bottom: none; color: var(--muted); font-size: 13px; }
+    main { padding: 18px; max-width: 980px; width: 100%; margin: 0 auto; }
+    .title { font-weight: 650; letter-spacing: .2px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+    }
+    .row { display: grid; gap: 10px; }
+    .row.cols-3 { grid-template-columns: 1fr auto auto; align-items: end; }
+    .row.cols-2 { grid-template-columns: 1fr auto; align-items: end; }
+    label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 6px; }
+    input[type="text"], textarea, select {
+      width: 100%;
+      background: #0f1320;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      outline: none;
+    }
+    input[type="text"]:focus, textarea:focus, select:focus { border-color: var(--accent); }
+    textarea {
+      min-height: 120px;
+      max-height: 50vh;
+      resize: vertical;
+      font-family: inherit;
+    }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+    button {
+      background: var(--accent);
+      border: 1px solid transparent;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.secondary { background: transparent; border-color: var(--border); color: var(--text); }
+    button.ghost { background: transparent; border-color: transparent; color: var(--muted); }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    .status { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; }
+    .dot.ok { background: var(--ok); }
+    .dot.err { background: var(--err); }
+    .spinner {
+      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.2); border-top-color: #fff; border-radius: 50%;
+      animation: spin 0.8s linear infinite; display: inline-block; vertical-align: -3px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .output {
+      margin-top: 14px;
+      background: #0b0f1a;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font-family: var(--mono);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-height: 60vh;
+      overflow: auto;
+    }
+    .topbar { display: flex; gap: 10px; align-items: end; margin-bottom: 10px; }
+    .grow { flex: 1; }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">UnLLM</div>
+    <div>
+        <span class="info-liner" hidden>
+            Backend: POST <code>/generate</code> with <code>{ prompt, model }</code>. Available models: <code>'gpt-4o-mini', 'gpt-5-mini', 'meta-llama/Llama-4-Scout-17B-16E-Instruct','mistralai/Mistral-Small-24B-Instruct-2501'</code>
+        </span>
+    </div>
+  </header>
+
+  <main>
+    <section class="card" aria-label="controls">
+      <div class="topbar">
+        <!-- <div class="grow">
+          <label for="model">Model</label>
+          <input id="model" name="model" type="text" list="models" placeholder="e.g., gpt-4o, llama-3.1, mixtral-8x7b" />
+          <datalist id="models">
+            <option selected value="gpt-4o-mini">aa</option>
+            <option value="gpt-5-mini">a</option>
+            <option value="llama-3.1-70b">a</option>
+            <option value="mixtral-8x7b">aa</option>
+          </datalist>
+        </div> -->
+        <div class="grow">
+          <select id="model" style="width: fit-content;">
+            <option selected value="gpt-4o-mini">gpt-4o-mini</option>
+            <option value="gpt-5-mini">gpt5-mini</option>
+            <option value="meta-llama/Llama-4-Scout-17B-16E-Instruct">Llama-4-Scout-17B-16E-Instruct</option>
+            <option value="mistralai/Mistral-Small-24B-Instruct-2501">Mistral-Small-24B-Instruct-2501</option>
+          </select>
+        </div>
+        <div hidden>
+          <label for="fetchModels" style="visibility:hidden">refresh</label>
+          <button id="fetchModels" class="secondary" title="Pull model list from backend when available">Refresh models</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="prompt">Prompt</label>
+          <textarea id="prompt" placeholder="Type your prompt… (Shift+Enter = newline, Ctrl/Cmd+Enter = send)"></textarea>
+          <div class="hint">Tip: Ctrl/Cmd+Enter to send. Your default browser will open if your server is set to do so.</div>
+        </div>
+      </div>
+
+      <div class="row cols-2" style="margin-top:10px">
+        <div class="status" id="status"><span class="dot" id="statusDot"></span><span id="statusText">Idle</span></div>
+        <div class="controls">
+          <button id="send">Generate</button>
+          <button id="clear" class="secondary">Clear</button>
+          <button id="copy" class="ghost" title="Copy response">Copy</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:14px" aria-label="output">
+      <label>Response</label>
+      <div class="output" id="output" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <footer>
+    Backend: POST <code>/generate</code> with <code>{ prompt, model }</code>. Available models: <code>'gpt-4o-mini', 'gpt-5-mini', 'meta-llama/Llama-4-Scout-17B-16E-Instruct','mistralai/Mistral-Small-24B-Instruct-2501'</code>
+  </footer>
+
+  <script>
+    const $ = (sel) => document.querySelector(sel);
+    const modelInput = $("#model");
+    const promptEl = $("#prompt");
+    const sendBtn = $("#send");
+    const clearBtn = $("#clear");
+    const copyBtn = $("#copy");
+    const outputEl = $("#output");
+    const statusText = $("#statusText");
+    const statusDot = $("#statusDot");
+    const fetchModelsBtn = $("#fetchModels");
+    const modelsList = $("#models");
+    const available_models = [ 'gpt-4o-mini', 'gpt-5-mini', 'meta-llama/Llama-4-Scout-17B-16E-Instruct','mistralai/Mistral-Small-24B-Instruct-2501']
+
+    // Persist chosen model
+    const savedModel = localStorage.getItem("llm_model") || available_models[0];
+    if (savedModel) modelInput.value = savedModel;
+
+    function setStatus(text, kind = "idle") {
+      statusText.textContent = text;
+      statusDot.className = "dot";
+      if (kind === "ok") statusDot.classList.add("ok");
+      else if (kind === "err") statusDot.classList.add("err");
+    }
+
+    function setLoading(isLoading) {
+      sendBtn.disabled = isLoading;
+      if (isLoading) {
+        setStatus("Generating…", "idle");
+        sendBtn.innerHTML = '<span class="spinner"></span> Generating';
+      } else {
+        setStatus("Idle", "idle");
+        sendBtn.textContent = "Generate";
+      }
+    }
+
+    function appendModels(list) {
+      if (!Array.isArray(list)) return;
+      const existing = new Set(Array.from(modelsList.children).map(o => o.value));
+      list.forEach(m => {
+        if (m && !existing.has(m)) {
+          const opt = document.createElement("option");
+          opt.value = m;
+          modelsList.appendChild(opt);
+        }
+      });
+    }
+
+    async function callGenerate(prompt, model) {
+      const res = await fetch("/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, model })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data?.ok === false) {
+        const msg = data?.error || `HTTP ${res.status}`;
+        throw new Error(msg);
+      }
+      return data;
+    }
+
+    function renderResponse(data) {
+      const resp = data?.response ?? data; // fallback just in case
+      const text = (typeof resp === "string") ? resp : JSON.stringify(resp, null, 2);
+      outputEl.textContent = text;
+      // Update datalist from backend
+      if (Array.isArray(data?.available_models)) appendModels(data.available_models);
+    }
+
+    async function onSend() {
+      const prompt = promptEl.value.trim();
+      const model = modelInput.value.trim();
+      if (!prompt) return setStatus("Please enter a prompt.", "err");
+      if (!model) return setStatus("Please choose or type a model.", "err");
+
+      localStorage.setItem("llm_model", model);
+      setLoading(true);
+      try {
+        const data = await callGenerate(prompt, model);
+        renderResponse(data);
+        setStatus("Done", "ok");
+      } catch (err) {
+        setStatus(err.message || "Request failed", "err");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    sendBtn.addEventListener("click", onSend);
+    clearBtn.addEventListener("click", () => {
+      promptEl.value = "";
+      outputEl.textContent = "";
+      setStatus("Cleared.");
+    });
+    copyBtn.addEventListener("click", async () => {
+      const txt = outputEl.textContent || "";
+      if (!txt) return setStatus("Nothing to copy.", "err");
+      try {
+        await navigator.clipboard.writeText(txt);
+        setStatus("Copied to clipboard.", "ok");
+      } catch {
+        setStatus("Copy failed.", "err");
+      }
+    });
+
+    // Optional: try to pull model list without triggering a real generation.
+    // Since your backend returns available_models only on /generate responses,
+    // this button sends a very short, harmless prompt.
+    fetchModelsBtn.addEventListener("click", async () => {
+      setLoading(true);
+      try {
+        const dummyModel = modelInput.value.trim() || "auto";
+        const data = await callGenerate("ping", dummyModel);
+        appendModels(data?.available_models || []);
+        setStatus("Model list updated.", "ok");
+      } catch (e) {
+        setStatus("Could not refresh models: " + (e.message || "error"), "err");
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    // Keyboard shortcuts: Ctrl/Cmd+Enter = send, Shift+Enter = newline
+    promptEl.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        onSend();
+      }
+    });
+
+    // Autosize textarea (simple)
+    function autosize(e) {
+      e.target.style.height = "auto";
+      e.target.style.height = Math.min(e.target.scrollHeight, window.innerHeight * 0.5) + "px";
+    }
+    promptEl.addEventListener("input", autosize);
+    window.addEventListener("load", () => autosize({ target: promptEl }));
+  </script>
+</body>
+</html>

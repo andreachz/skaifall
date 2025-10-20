@@ -1,0 +1,2 @@
+import{z as t}from"./useAppNameEnum-B_RCZZaG.js";import{u as c}from"./useTypedSearchParams-BhKJnsRl.js";import{U as o,D as r}from"./username-DImii0_h.js";const i=t.object({usernameKind:o});function U({allowPhone:e}){const[a,s]=c(i,{usernameKind:r}),n=m=>{s({usernameKind:m},{replace:!0})};return[e?a.usernameKind:r,n]}function h(e){return new URLSearchParams({usernameKind:e})}export{h as c,U as u};
+//# sourceMappingURL=useUsernameKind-DUS4mBhw.js.map

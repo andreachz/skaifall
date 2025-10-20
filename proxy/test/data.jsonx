@@ -1,0 +1,312 @@
+[
+ {
+  "ip": "Proxy address:port",
+  "type": "Proxy type",
+  "anonymity": "Anonymity*",
+  "country": "Country (city)",
+  "organization": "Hostname/ORG",
+  "latency": "Latency**",
+  "uptime": "Uptime",
+  "lastChecked": "Check date (GMT+03)"
+ },
+ {
+  "ip": "181.204.81.178document.write(\"<font class=spy2>:<\\/font>\"+(o5k1c3^k1v2)+(o5k1c3^k1v2)+(o5k1c3^k1v2))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "Colombia (Pereira)",
+  "organization": "Static-BA-181-204-81-178.tigoune.com.co (Colombia Movil)",
+  "latency": "20.309",
+  "uptime": "",
+  "lastChecked": "10% (27) -"
+ },
+ {
+  "ip": "45.233.170.61document.write(\"<font class=spy2>:<\\/font>\"+(o5k1c3^k1v2)+(o5k1c3^k1v2)+(o5k1c3^k1v2))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "Colombia (Popayán) !!!",
+  "organization": "45.233.170.61 (SIMECT GROUP REDES E INTERNET S.A.S)",
+  "latency": "6.284",
+  "uptime": "",
+  "lastChecked": "13% (71) -"
+ },
+ {
+  "ip": "202.191.123.195document.write(\"<font class=spy2>:<\\/font>\"+(l2e5v2^l2d4)+(z6m3i9^c3m3)+(o5k1c3^k1v2)+(z6m3i9^c3m3))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "Bangladesh",
+  "organization": "202.191.123.195 (Bijoy Online Ltd. Multihome Internet Service Provider)",
+  "latency": "8.433",
+  "uptime": "",
+  "lastChecked": "7% (27) -"
+ },
+ {
+  "ip": "186.31.197.103document.write(\"<font class=spy2>:<\\/font>\"+(l2e5v2^l2d4)+(z6m3i9^c3m3)+(l2e5v2^l2d4)+(z6m3i9^c3m3))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "Colombia (Bogotá)",
+  "organization": "static-186-31-197-103.etb.net.co (Colombia)",
+  "latency": "15.201",
+  "uptime": "",
+  "lastChecked": "6% (7) -"
+ },
+ {
+  "ip": "175.158.46.54document.write(\"<font class=spy2>:<\\/font>\"+(q7q7x4^z6s9)+(h8g7k1^h8z6)+(d4f6h8^y5h8)+(f6y5j0^q7e5))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "Indonesia (South Tangerang)",
+  "organization": "ip-175-158-46-54.cbn.net.id (PT. Cyberindo Aditama)",
+  "latency": "20.284",
+  "uptime": "",
+  "lastChecked": "25% (1) -"
+ },
+ {
+  "ip": "104.225.220.233document.write(\"<font class=spy2>:<\\/font>\"+(l2e5v2^l2d4)+(z6m3i9^c3m3))",
+  "type": "HTTP",
+  "anonymity": "HIA",
+  "country": "United States (Dallas)",
+  "organization": "104.225.220.233 (HVC-AS)",
+  "latency": "10.265",
+  "uptime": "",
+  "lastChecked": "17% (1227) -"
+ },
+ {
+  "ip": "103.204.129.42document.write(\"<font class=spy2>:<\\/font>\"+(q7q7x4^z6s9)+(h8g7k1^h8z6)+(d4f6h8^y5h8)+(l2e5v2^l2d4))",
+  "type": "HTTP (Squid)",
+  "anonymity": "NOA",
+  "country": "United States",
+  "organization": "server.tawrid.net (A2HOSTING)",
+  "latency": "12.175",
+  "uptime": "",
+  "lastChecked": "14% (94) -"
+ },
+ {
+  "ip": "154.90.48.76document.write(\"<font class=spy2>:<\\/font>\"+(l2e5v2^l2d4)+(z6m3i9^c3m3))",
+  "type": "HTTP",
+  "anonymity": "HIA",
+  "country": "Indonesia (Jakarta)",
+  "organization": "154.90.48.76 (Kaopu Cloud HK Limited)",
+  "latency": "19.011",
+  "uptime": "",
+  "lastChecked": "31% (126) -"
+ },
+ {
+  "ip": "187.61.98.7document.write(\"<font class=spy2>:<\\/font>\"+(l2e5v2^l2d4)+(z6m3i9^c3m3)+(l2e5v2^l2d4)+(z6m3i9^c3m3))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "Brazil (Palmeirândia)",
+  "organization": "187.61.98.7 (CINTE Telecom Comercio e Servicos Ltda.)",
+  "latency": "7.205",
+  "uptime": "",
+  "lastChecked": "10% (30) -"
+ },
+ {
+  "ip": "45.149.235.198document.write(\"<font class=spy2>:<\\/font>\"+(q7q7x4^z6s9)+(h8g7k1^h8z6)+(d4f6h8^y5h8)+(l2e5v2^l2d4))",
+  "type": "HTTP (Squid)",
+  "anonymity": "NOA",
+  "country": "Netherlands (Amsterdam)",
+  "organization": "kefteme.chpok (Serv.host Group Ltd)",
+  "latency": "20.003",
+  "uptime": "",
+  "lastChecked": "15% (8) -"
+ },
+ {
+  "ip": "58.136.170.220document.write(\"<font class=spy2>:<\\/font>\"+(l2e5v2^l2d4)+(z6m3i9^c3m3)+(l2e5v2^l2d4)+(z6m3i9^c3m3))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "Thailand (Bangkok)",
+  "organization": "58.136.170.220 (AIS Fibre)",
+  "latency": "19.398",
+  "uptime": "",
+  "lastChecked": "50% (1) -"
+ },
+ {
+  "ip": "143.255.43.206document.write(\"<font class=spy2>:<\\/font>\"+(o5k1c3^k1v2)+(o5k1c3^k1v2)+(o5k1c3^k1v2))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "Mexico",
+  "organization": "143.255.43.206 (SMARTNETT CARRIER SA DE CV)",
+  "latency": "8.991",
+  "uptime": "",
+  "lastChecked": "14% (32) -"
+ },
+ {
+  "ip": "36.67.194.162document.write(\"<font class=spy2>:<\\/font>\"+(l2e5v2^l2d4)+(z6m3i9^c3m3)+(i9p6l2^r8w3)+(d4f6h8^y5h8))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "Indonesia (Cijantung)",
+  "organization": "36.67.194.162 (PT Telekomunikasi Indonesia)",
+  "latency": "5.914",
+  "uptime": "",
+  "lastChecked": "12% (34) -"
+ },
+ {
+  "ip": "190.52.100.0document.write(\"<font class=spy2>:<\\/font>\"+(o5k1c3^k1v2)+(o5k1c3^k1v2)+(o5k1c3^k1v2))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "Venezuela (Caracas)",
+  "organization": "190.52.100.0 (AS-GOLD)",
+  "latency": "19.437",
+  "uptime": "",
+  "lastChecked": "8% (8) -"
+ },
+ {
+  "ip": "103.191.251.54document.write(\"<font class=spy2>:<\\/font>\"+(l2e5v2^l2d4)+(z6m3i9^c3m3)+(l2e5v2^l2d4)+(z6m3i9^c3m3))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "Indonesia !!!",
+  "organization": "103.191.251.54 (PT Mulia Batam Net)",
+  "latency": "4.786",
+  "uptime": "",
+  "lastChecked": "11% (26) -"
+ },
+ {
+  "ip": "190.128.253.218document.write(\"<font class=spy2>:<\\/font>\"+(o5k1c3^k1v2)+(o5k1c3^k1v2)+(o5k1c3^k1v2))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "Paraguay (Asunción) !!!",
+  "organization": "190.128.253.218 (Telecel S.A.)",
+  "latency": "10.407",
+  "uptime": "",
+  "lastChecked": "16% (25) -"
+ },
+ {
+  "ip": "38.7.18.103document.write(\"<font class=spy2>:<\\/font>\"+(o5k1c3^k1v2)+(o5k1c3^k1v2)+(o5k1c3^k1v2))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "Mexico (Nueva Italia de Ruiz)",
+  "organization": "customer-38-7-18-103.gbic.mx (INTERNET TELEFONIA Y TV DE MICHOACAN SA DE CV)",
+  "latency": "5.813",
+  "uptime": "",
+  "lastChecked": "8% (9) -"
+ },
+ {
+  "ip": "212.98.139.70document.write(\"<font class=spy2>:<\\/font>\"+(l2e5v2^l2d4)+(z6m3i9^c3m3)+(l2e5v2^l2d4)+(z6m3i9^c3m3))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "Lebanon",
+  "organization": "corp-212-98-139-70.terra.net.lb (TerraNet sal)",
+  "latency": "11.349",
+  "uptime": "",
+  "lastChecked": "11% (25) -"
+ },
+ {
+  "ip": "103.191.165.146document.write(\"<font class=spy2>:<\\/font>\"+(l2e5v2^l2d4)+(z6m3i9^c3m3)+(o5k1c3^k1v2)+(z6m3i9^c3m3))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "Indonesia (Subang)",
+  "organization": "103.191.165.146 (PT Sakti Wijaya Network)",
+  "latency": "6.512",
+  "uptime": "",
+  "lastChecked": "15% (13) -"
+ },
+ {
+  "ip": "41.191.203.162document.write(\"<font class=spy2>:<\\/font>\"+(l2e5v2^l2d4)+(z6m3i9^c3m3))",
+  "type": "HTTP",
+  "anonymity": "ANM",
+  "country": "Lesotho !!!",
+  "organization": "41.191.203.162 (VODACOM-LESOTHO)",
+  "latency": "3.014",
+  "uptime": "",
+  "lastChecked": "71% (15) +"
+ },
+ {
+  "ip": "194.226.88.59document.write(\"<font class=spy2>:<\\/font>\"+(q7q7x4^z6s9)+(h8g7k1^h8z6)+(d4f6h8^y5h8)+(l2e5v2^l2d4))",
+  "type": "HTTP (Squid)",
+  "anonymity": "NOA",
+  "country": "Russia",
+  "organization": "194.226.88.59 (The Federal Guard Service of the Russian Federation)",
+  "latency": "7.357",
+  "uptime": "",
+  "lastChecked": "45% (15) -"
+ },
+ {
+  "ip": "103.167.170.167document.write(\"<font class=spy2>:<\\/font>\"+(l2e5v2^l2d4)+(z6m3i9^c3m3)+(l2e5v2^l2d4)+(z6m3i9^c3m3))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "Indonesia (Jakarta)",
+  "organization": "103.167.170.167 (PT Rajeg Media Telekomunikasi)",
+  "latency": "2.083",
+  "uptime": "",
+  "lastChecked": "15% (3) -"
+ },
+ {
+  "ip": "203.76.98.21document.write(\"<font class=spy2>:<\\/font>\"+(i9p6l2^r8w3)+(f6y5j0^q7e5)+(o5k1c3^k1v2)+(f6y5j0^q7e5)+(l2e5v2^l2d4))",
+  "type": "HTTP",
+  "anonymity": "HIA",
+  "country": "Bangladesh (Dhaka)",
+  "organization": "98.21.nuclear.link3.net (Link3 Technologies Ltd.)",
+  "latency": "9.713",
+  "uptime": "",
+  "lastChecked": "10% (22) -"
+ },
+ {
+  "ip": "157.15.63.37document.write(\"<font class=spy2>:<\\/font>\"+(l2e5v2^l2d4)+(z6m3i9^c3m3)+(l2e5v2^l2d4)+(z6m3i9^c3m3))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "Indonesia (Malang)",
+  "organization": "157.15.63.37 (PT Anugerah Media Data Nusantara)",
+  "latency": "8.691",
+  "uptime": "",
+  "lastChecked": "21% (3) -"
+ },
+ {
+  "ip": "50.200.166.130document.write(\"<font class=spy2>:<\\/font>\"+(l2e5v2^l2d4)+(z6m3i9^c3m3)+(l2e5v2^l2d4)+(z6m3i9^c3m3))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "United States (Overland Park)",
+  "organization": "50.200.166.130 (COMCAST-7922)",
+  "latency": "4.64",
+  "uptime": "",
+  "lastChecked": "13% (33) -"
+ },
+ {
+  "ip": "62.210.15.199document.write(\"<font class=spy2>:<\\/font>\"+(l2e5v2^l2d4)+(z6m3i9^c3m3))",
+  "type": "HTTP",
+  "anonymity": "HIA",
+  "country": "France (Paris)",
+  "organization": "62-210-15-199.rev.poneytelecom.eu (Scaleway S.a.s.)",
+  "latency": "5.921",
+  "uptime": "",
+  "lastChecked": "26% (444) -"
+ },
+ {
+  "ip": "12.232.227.99document.write(\"<font class=spy2>:<\\/font>\"+(l2e5v2^l2d4)+(z6m3i9^c3m3)+(l2e5v2^l2d4)+(z6m3i9^c3m3))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "United States (Traverse City)",
+  "organization": "12.232.227.99 (ATT-INTERNET4)",
+  "latency": "19.503",
+  "uptime": "",
+  "lastChecked": "33% (1) -"
+ },
+ {
+  "ip": "103.224.125.38document.write(\"<font class=spy2>:<\\/font>\"+(d4f6h8^y5h8)+(z6m3i9^c3m3)+(d4f6h8^y5h8)+(i9p6l2^r8w3))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "Indonesia (Depok)",
+  "organization": "103.224.125.38 (PT Curug Lintas Indonesia)",
+  "latency": "5.904",
+  "uptime": "",
+  "lastChecked": "14% (35) -"
+ },
+ {
+  "ip": "62.210.215.36document.write(\"<font class=spy2>:<\\/font>\"+(l2e5v2^l2d4)+(z6m3i9^c3m3))",
+  "type": "HTTP",
+  "anonymity": "ANM",
+  "country": "France (Paris)",
+  "organization": "bis.amvm.24eme.fr (Scaleway S.a.s.)",
+  "latency": "5.525",
+  "uptime": "",
+  "lastChecked": "31% (164) -"
+ },
+ {
+  "ip": "27.147.222.248document.write(\"<font class=spy2>:<\\/font>\"+(l2e5v2^l2d4)+(z6m3i9^c3m3)+(l2e5v2^l2d4)+(z6m3i9^c3m3))",
+  "type": "HTTP (Mikrotik)",
+  "anonymity": "NOA",
+  "country": "Bangladesh (Dhaka)",
+  "organization": "222.248.cetus.link3.net (Link3 Technologies Ltd.)",
+  "latency": "20.844",
+  "uptime": "",
+  "lastChecked": "8% (9) -"
+ }
+]

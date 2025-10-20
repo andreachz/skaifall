@@ -1,0 +1,2 @@
+import{j as r}from"./index-DjeUAv9f.js";import{c as e}from"./index-npON1Cka.js";import{a as i}from"./Button-CCHVtoRV.js";const c="_root_1jica_1",p="_broad_1jica_8",l="_transparentButton_1jica_12",t={root:c,broad:p,transparentButton:l},u=({children:o,broad:s=!1,buttonAlignment:a})=>r.jsx(i,{deriveStyles:n=>n.variant==="transparent"?{className:t.transparentButton,align:a}:{align:a},children:r.jsx("div",{className:e(t.root,{[t.broad]:s}),children:o})});export{u as F};
+//# sourceMappingURL=FieldGrouping-BFjljUyA.js.map

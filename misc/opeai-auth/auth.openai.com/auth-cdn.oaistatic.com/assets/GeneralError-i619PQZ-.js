@@ -1,0 +1,2 @@
+import{j as t}from"./index-DjeUAv9f.js";import{A as i}from"./AuthStepLayout-DRZ_4X3y.js";import{L as l}from"./Logo-CFlQEucm.js";const a="_logo_13gxt_1",n="_subtitle_13gxt_6",o={logo:a,subtitle:n},x=({title:s,subTitle:e,actions:r})=>t.jsx(i,{wide:!0,decoration:t.jsx(l,{name:"openAI",size:48,className:o.logo}),title:s,subTitle:t.jsx("div",{className:o.subtitle,children:e}),children:r});export{x as G};
+//# sourceMappingURL=GeneralError-i619PQZ-.js.map

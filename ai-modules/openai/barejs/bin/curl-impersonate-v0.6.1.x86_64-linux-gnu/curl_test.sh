@@ -1,0 +1,22 @@
+./curl_chrome116 'https://chatgpt.com/backend-anon/sentinel/chat-requirements' \
+  -X POST \
+  -H 'accept: */*' \
+  -H 'accept-language: it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7' \
+  -H 'accept-encoding: gzip, deflate, br, zstd' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json' \
+  -H 'oai-client-version: prod-9d358314d30a26d59ec2f2390d079c86e2c0018f' \
+  -H 'oai-device-id: 7bf62582-0831-4cb5-81c3-25e955be37bf' \
+  -H 'oai-language: it-IT' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'sec-ch-ua: "Not;A=Brand";v="99", "Google Chrome";v="139", "Chromium";v="139"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Windows"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'cookie: __Host-next-auth.csrf-token=ee6672ee8bf460d445ddebb9d86ef58c6aed31605b2a810fd7117d1b7ad0c44d%7Cfcab5908beb79da8918d203e19d0a8d0bc72f1242017926eee313ff20e11283b; __Secure-next-auth.callback-url=https%3A%2F%2Fchatgpt.com; oai-did=2d119344-b874-44fe-ac53-206896d60184; __cf_bm=gYX7ls44p3lEt65GYt5J4L9Kt1nea2bom9yepWRadro-1757324016-1.0.1.1-T7CuR08JhBP5CVarw1.N38rnkccE951egct8PPYD8GmJawvzxHXJpUyZoVYIvJMgmUvODJPaC5iOcfm6oHkk5oGmzjYL3A0CYLy_amq0aXM; __cflb=04dTofELUVCxHqRn2XgseaxVQDk7Jcu7Nv3ZDpgz7u; _cfuvid=62.Zz_gbo47jAzOKhozosXt6xTmb2QZoqJOWfXOchF0-1757324016378-0.0.1.1-604800000' \
+  -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36' \
+  -H 'referer: https://chatgpt.com/' \
+  --data-binary '{"p":"gAAAAACWzMwMDAsIk1vbiBTZXAgMDggMjAyNSAxMTozNDowOSBHTVQrMDIwMCAoT3JhIGxlZ2FsZSBkZWxs4oCZRXVyb3BhIGNlbnRyYWxlKSIsNDI5NDcwNTE1MiwxLCJNb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBDaHJvbWUvMTM5LjAuMC4wIFNhZmFyaS81MzcuMzYiLG51bGwsInByb2QtMDIwYjM4YTVjMWViZjY4OThiNzVjOGYxNWExOTcyYmJhMmZmODNlMiIsIml0LUlUIiwiaXQtSVQsaXQsZW4tVVMsZW4iLDAsImphdmFFbmFibGVk4oiSKCkgPT4gZmFsc2UiLCJkb2N1bWVudEVsZW1lbnQiLCJkb2N1bWVudCIsMzY1NDAuMDE2OSwiN2JmNjI1ODItMDgzMS00Y2I1LTgxYzMtMjVlOTU1YmUzN2JmIiwiIiwxMiwxNzU3MzI0MDEzMjcyLjUyNV0="}'

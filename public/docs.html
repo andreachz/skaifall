@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Local AI Server – Simple API Docs</title>
+  <style>
+    :root {
+      --bg: #0b0d12; --card: #12151c; --muted: #9aa3b2; --fg: #e7ecf3; --pri: #7cc0ff; --acc: #a0ffcf;
+    }
+    html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji"}
+    .wrap{max-width:980px;margin:0 auto;padding:28px}
+    header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:24px}
+    h1{font-size:28px;margin:0}
+    h2{margin-top:32px;border-bottom:1px solid #1d2230;padding-bottom:8px}
+    h3{margin-top:22px}
+    code,pre{background:#0f1320;color:#dbe7ff;border:1px solid #1b2030;border-radius:10px}
+    code{padding:.15em .35em}
+    pre{padding:14px;overflow:auto}
+    a{color:var(--pri)}
+    .card{background:var(--card);border:1px solid #1b2030;border-radius:14px;padding:16px;margin:14px 0}
+    .grid{display:grid;grid-template-columns:1fr;gap:12px}
+    @media (min-width:760px){ .grid{grid-template-columns:repeat(2,1fr)} }
+    table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid #1b2030;border-radius:14px;overflow:hidden}
+    th,td{padding:10px 12px;border-bottom:1px solid #1b2030;vertical-align:top}
+    th{background:#0f1320;text-align:left;color:#b7c2d8}
+    tr:last-child td{border-bottom:0}
+    .pill{display:inline-block;border:1px solid #1b2030;background:#0f1320;border-radius:999px;padding:2px 10px;color:#b7c2d8;font-size:12px;margin-right:6px}
+    .muted{color:var(--muted)}
+    .badge{background:#0f3924;border:1px solid #1d5a3c;color:#a9ffcf;border-radius:8px;padding:2px 8px;font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Local AI Server – Simple API Docs</h1>
+      <div class="muted">Node ≥ <code>22.x</code> required</div>
+    </header>
+
+    <div class="card">
+      <p><strong>Base URL</strong>: <code>http://localhost:&lt;PORT&gt;</code> (default <code>3000</code>)</p>
+      <p>This server exposes a tiny HTTP API for generating AI responses (with optional Server‑Sent Event streaming), serving a static index page, opening lightweight docs, and clearing state.</p>
+      <p><strong>Process start</strong>: <code>node server.js [PORT]</code>. On start, if <code>public/index.html</code> exists the server will attempt to open it in your default browser.</p>
+    </div>
+
+    <h2>Endpoints</h2>
+
+    <table>
+      <thead>
+        <tr><th>Method &amp; Path</th><th>Purpose</th><th>Content‑Type</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="pill">GET</span><code>/</code></td>
+          <td>Serve <code>public/index.html</code>. If missing, returns a warning string.</td>
+          <td><code>text/html</code> (or <code>text/plain</code> on warning)</td>
+        </tr>
+        <tr>
+          <td><span class="pill">GET</span><code>/doc</code></td>
+          <td>Serve <code>public/doc.html</code>. If missing, returns a warning string.</td>
+          <td><code>text/html</code> (or <code>text/plain</code> on warning)</td>
+        </tr>
+        <tr>
+          <td><span class="pill">GET</span><code>/clear</code></td>
+          <td>Calls <code>reloadPage()</code> from <code>./ai-modules/openai/chatgpt</code> and returns JSON indicating success/failure.</td>
+          <td><code>application/json</code></td>
+        </tr>
+        <tr>
+          <td><span class="pill">POST</span><code>/generate</code></td>
+          <td>Generates a response using the selected provider+model. Supports <span class="badge">SSE streaming</span> or standard JSON.</td>
+          <td><code>application/json</code> request &amp; response (stream uses <code>text/event-stream</code>)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 id="generate">POST /generate</h2>
+    <div class="card">
+      <h3>Request body (JSON)</h3>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>prompt</code></td><td>string</td><td>No*</td><td>Plain prompt. If omitted/empty, the server stringifies <code>messages</code>.</td></tr>
+          <tr><td><code>messages</code></td><td>array</td><td>No*</td><td>Alternate chat-style input. Used when <code>prompt</code> is empty.</td></tr>
+          <tr><td><code>model</code></td><td>string</td><td>No</td><td>Name of model to use; interpretation depends on provider.</td></tr>
+          <tr><td><code>provider</code></td><td>string</td><td>No</td><td>Key into <code>providers</code> from <code>./helpers/constants</code>. Defaults to <code>DEFAULT_PROVIDER</code>.</td></tr>
+          <tr><td><code>stream</code></td><td>boolean</td><td>No</td><td>If <code>true</code>, response is streamed via <em>Server‑Sent Events</em> (SSE) over the same POST.</td></tr>
+        </tbody>
+      </table>
+      <p class="muted">* At least one of <code>prompt</code> or <code>messages</code> should be provided.</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Non‑streaming example (cURL)</h3>
+        <pre><code>curl -sS -X POST http://localhost:3000/generate \ 
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Write a haiku about autumn.",
+    "model": "gpt-4o-mini",
+    "provider": "openai",
+    "stream": false
+  }'
+</code></pre>
+        <h4>Response (200)</h4>
+        <pre><code>{
+  "ok": true,
+  "response": "Crisp air, quiet leaves…",
+  "available_models": ["gpt-4o-mini", "..."]
+}
+</code></pre>
+      </div>
+
+      <div class="card">
+        <h3>Streaming example (Node fetch + SSE)</h3>
+        <p class="muted">Browsers do not support <code>EventSource</code> with POST. Use <code>fetch()</code> and read the stream manually.</p>
+        <pre><code>const res = await fetch("http://localhost:3000/generate", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    prompt: "Stream tokens please.",
+    model: "gpt-4o-mini",
+    provider: "openai",
+    stream: true
+  })
+});
+
+const reader = res.body.getReader();
+const decoder = new TextDecoder();
+let buffer = "";
+
+while (true) {
+  const { value, done } = await reader.read();
+  if (done) break;
+  buffer += decoder.decode(value, { stream: true });
+  // SSE frames are separated by double newlines
+  const frames = buffer.split("\n\n");
+  buffer = frames.pop();
+  for (const frame of frames) {
+    // Each frame may have lines like: "event: ..." and "data: {...}"
+    const dataLine = frame.split("\n").find(l => l.startsWith("data:"));
+    if (!dataLine) continue;
+    const payload = JSON.parse(dataLine.slice(5));
+    if (payload.message) process.stdout.write(payload.message);
+    if (payload.done) console.log("\n[done]", payload.text);
+  }
+}
+</code></pre>
+        <h4>SSE event payloads</h4>
+        <ul>
+          <li><code>{"message": "&lt;chunk&gt;"}</code> — emitted repeatedly as tokens arrive</li>
+          <li><code>{"done": true, "text": "&lt;full text&gt;"}</code> — final message</li>
+          <li><code>event: error</code> with <code>{ ok:false, error:&lt;msg&gt; }</code> on failure</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Errors</h3>
+    <table>
+      <thead><tr><th>Status</th><th>When</th><th>Body</th></tr></thead>
+      <tbody>
+        <tr><td>400</td><td>Empty or invalid JSON body</td><td><code>{ ok:false, error:"..." }</code></td></tr>
+        <tr><td>404</td><td>Unknown path</td><td><code>{ ok:false, error:"not found" }</code></td></tr>
+        <tr><td>500</td><td>Provider/model errors, generate failure, or internal error</td><td><code>{ ok:false, error:"..." }</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2>GET /clear</h2>
+    <div class="card">
+      <p>Invokes <code>reloadPage()</code> from <code>./ai-modules/openai/chatgpt</code>. Returns:</p>
+      <pre><code>{ "ok": true }</code></pre>
+      <p>or on failure:</p>
+      <pre><code>{ "ok": false, "error": "failed to clear: ..." }</code></pre>
+    </div>
+
+    <h2>Static pages</h2>
+    <div class="card">
+      <ul>
+        <li><strong>GET /</strong> → serves <code>public/index.html</code> or the warning: <em>"Warning: index.html for frontend page not found. You can keep using POST /generate API"</em>.</li>
+        <li><strong>GET /doc</strong> → serves <code>public/doc.html</code> or the same warning string.</li>
+      </ul>
+    </div>
+
+    <h2>Notes &amp; Implementation Details</h2>
+    <ul>
+      <li>Node version check: the process exits at startup unless <code>checkNodeVersion(22)</code> passes.</li>
+      <li><code>providers</code> and <code>DEFAULT_PROVIDER</code> come from <code>./helpers/constants</code>; <code>selectorByProvider()</code> resolves the <code>generate()</code> function for the chosen provider.</li>
+      <li>Non‑stream responses include an <code>available_models</code> field if defined in module scope.</li>
+      <li>On server start, if <code>public/index.html</code> exists, a browser window is opened for the base URL (macOS: <code>open</code>, Windows: <code>start</code>, Linux: <code>xdg-open</code>).</li>
+    </ul>
+
+    <h2>Quick Reference</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Minimal JSON request</h3>
+        <pre><code>{
+  "prompt": "Hello there",
+  "stream": false
+}
+</code></pre>
+      </div>
+      <div class="card">
+        <h3>Chat-style request</h3>
+        <pre><code>{
+  "messages": [
+    {"role": "system", "content": "You are brief."},
+    {"role": "user", "content": "Summarize this in one line."}
+  ],
+  "model": "gpt-4o-mini",
+  "provider": "openai",
+  "stream": true
+}
+</code></pre>
+      </div>
+    </div>
+
+    <footer class="muted" style="margin-top:34px">© Your Project — Generated simple docs for <code>server.js</code></footer>
+  </div>
+</body>
+</html>

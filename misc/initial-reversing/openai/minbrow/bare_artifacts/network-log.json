@@ -1,0 +1,28 @@
+{
+  "url": "https://amicidellapallavolo.it",
+  "baseUrl": "https://amicidellapallavolo.it",
+  "startedAt": "2025-09-06T07:56:34.411Z",
+  "durationMs": 448,
+  "html": "C:\\Users\\Andrea11\\Documents\\uni\\SAR3\\jslab\\openai\\minbrow\\bare_artifacts\\document.html",
+  "counts": {
+    "discovered": 2,
+    "loaded": 2,
+    "failed": 0
+  },
+  "resources": [
+    {
+      "url": "https://amicidellapallavolo.it/stile.css",
+      "ok": true,
+      "status": 200,
+      "type": "text/css",
+      "size": 1947
+    },
+    {
+      "url": "https://amicidellapallavolo.it/public/amicidellapallavolo.gif",
+      "ok": true,
+      "status": 200,
+      "type": "image/gif",
+      "size": 21967
+    }
+  ]
+}

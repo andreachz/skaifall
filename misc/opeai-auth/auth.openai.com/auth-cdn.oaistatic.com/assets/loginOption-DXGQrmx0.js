@@ -1,0 +1,2 @@
+import{z as e}from"./useAppNameEnum-B_RCZZaG.js";const o=e.enum(["google","microsoft","apple","email","phone_number"]),n=e.enum(["existing_user","new_user"]),t=e.object({name:o,enabled:e.boolean(),tempDisabled:e.boolean(),kind:e.enum(["social","username"]),loginStrategy:n}),i={[o.enum.google]:"google-oauth2",[o.enum.microsoft]:"windowslive",[o.enum.apple]:"apple"};export{o as L,t as a,i as b};
+//# sourceMappingURL=loginOption-DXGQrmx0.js.map

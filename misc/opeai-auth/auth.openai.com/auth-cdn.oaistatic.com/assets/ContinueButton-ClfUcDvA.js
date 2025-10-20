@@ -1,0 +1,2 @@
+import{j as t}from"./index-DjeUAv9f.js";import{B as o}from"./Button-CCHVtoRV.js";import{M as n}from"./index-npON1Cka.js";const s=({...e})=>t.jsx(o,{variant:"primary",type:"submit","data-dd-action-name":"Continue",...e,children:t.jsx(n,{id:"continueButton.continue",defaultMessage:"Continue",description:"A button that can be used to proceed to the next step in the login flow."})});export{s as C};
+//# sourceMappingURL=ContinueButton-ClfUcDvA.js.map
