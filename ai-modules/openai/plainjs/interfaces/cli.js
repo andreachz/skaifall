@@ -1,3 +1,5 @@
+//cli.js
+
 const {updateState, conversationAPI, updateStateWorkers, fileUploadTask} = require('../apis')
 const {store, chatMetadata} = require('../store')
 const {extractUsefulTextFromChunk, listenForKeyOnce, parseOptions, getGptModelFromChunk} = require('../helpers')

@@ -8,18 +8,29 @@
   },
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "**API-free client and web proxy** for **OpenAI ChatGPT-4 / GPT-5** and **DuckDuckGo Chat** models.  \r Runs entirely locally — **no API key required.**",
   "dependencies": {
+    "axios": "^1.12.2",
     "express": "^5.1.0",
     "fetch-cookie": "^3.1.0",
     "image-size": "^2.0.2",
     "jsdom": "^26.1.0",
     "mime-types": "^3.0.1",
+    "net": "^1.0.2",
     "node-fetch": "^3.3.2",
     "node-fetch-v2": "npm:node-fetch@^2.7.0",
     "puppeteer-core": "^24.19.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "socks-proxy-agent": "^8.0.5",
     "undici": "^7.16.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andreachz/skaifall.git"
+  },
+  "bugs": {
+    "url": "https://github.com/andreachz/skaifall/issues"
+  },
+  "homepage": "https://github.com/andreachz/skaifall#readme"
 }
