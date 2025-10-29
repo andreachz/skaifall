@@ -522,7 +522,8 @@ if (media) {
     force_parallel_switch: "auto"
   };
 
-
+  console.log(JSON.stringify(bodyPayload,null,2))
+  console.log('\n')
   const USE_PROXY = 0 || USE_PROXY_ALL // working for stream response
 
   let res
