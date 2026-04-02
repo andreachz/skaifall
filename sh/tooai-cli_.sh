@@ -3,7 +3,6 @@
 # set -euo pipefail
 # set -eu
 
-# tooai-cli.sh script
 
 
 # required to show emojis correctly
@@ -117,45 +116,7 @@ start_tor_if_needed() {
     
     
 
-    # ===============================
-    # Tor Browser–like torrc
-    # ===============================
-    TORRC="$TOR_TMP_DIR/torrc"
-
-    cat > "$TORRC" <<'EOF'
-# Tor Browser–like torrc approximation (no custom exit nodes)
-
-# Don’t act as a relay
-ORPort 0
-
-# Avoid writing to disk as much as possible
-AvoidDiskWrites 1
-
-# Only listen locally for SOCKS and control; actual ports are
-# overridden by command-line arguments in the wrapper script.
-SocksPort 127.0.0.1:9050
-ControlPort 127.0.0.1:9051
-CookieAuthentication 1
-
-# Reasonable circuit lifetime (Tor Browser uses about 10 minutes)
-MaxCircuitDirtiness 600
-
-# Safer DNS and connection behavior
-ClientUseIPv4 1
-ClientUseIPv6 1
-ClientDNSRejectInternalAddresses 1
-
-# Extra safety when using SOCKS
-SafeSocks 1
-
-# Use entry guards (like Tor Browser)
-UseEntryGuards 1
-
-# Minimal logging, no log files
-Log notice stderr
-EOF
-
-
+TORRC="$TOR_TMP_DIR/torrc"
 # cat > "$TORRC" <<EOF
 # ExitNodes {us},{ca},{gb}
 # StrictNodes 1
@@ -297,8 +258,7 @@ random_user_agent() {
 # ========= config (feel free to tweak) =========
 USER_AGENT="${USER_AGENT:-Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36}$(date +%s)"
 
-# OAI_CLIENT_VERSION="${OAI_CLIENT_VERSION:-prod-020b38a5c1ebf6898b75c8f15a1972bba2ff83e2}"
-OAI_CLIENT_VERSION="${OAI_CLIENT_VERSION:-prod-be605c35d48ad8f52a819940fddd545ac29bab73}"
+OAI_CLIENT_VERSION="${OAI_CLIENT_VERSION:-prod-020b38a5c1ebf6898b75c8f15a1972bba2ff83e2}"
 LANG_HDR="${LANG_HDR:-en-US,en;q=0.9}"
 TZ_NAME="${TZ_NAME:-Europe/Rome}"
 TZ_OFFSET_MIN="${TZ_OFFSET_MIN:--120}" # Europe/Rome example
@@ -783,7 +743,6 @@ build_conv_body() {
    "page_height":800,
    "page_width":1200,
    "pixel_ratio":1,
-   "app_name":"chatgpt.com",
    "screen_height":1080,
    "screen_width":1920},
  "paragen_cot_summary_display_override":"allow",
@@ -1191,7 +1150,7 @@ send_request() {
       # trap 'rm -f "$fifo"; kill $(jobs -p) 2>/dev/null' EXIT
 
       cat "$fifo" &
-      #en-US
+
       stream_tokens "decode" < <(
         curl -sS -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
           ${ANON:+--socks5-hostname 127.0.0.1:9050} \
@@ -1200,17 +1159,9 @@ send_request() {
           -H "content-type: application/json" \
           -H "oai-client-version: $OAI_CLIENT_VERSION" \
           -H "oai-device-id: $OAI_DID" \
-          -H "oai-language: it-IT" \
-          -H "referer: https://chatgpt.com/" \
+          -H "oai-language: en-US" \
           -H "openai-sentinel-chat-requirements-token: $req_token" \
-          -H "sec-ch-ua-platform: \"Windows\"" \
-          -H "sec-ch-ua-mobile: ?0" \
-          -H "sec-ch-ua: \"Chromium\";v=\"142\", \"Google Chrome\";v=\"142\", \"Not_A Brand\";v=\"99\"" \
-          -H "sec-fetch-dest: empty" \
-          -H "sec-fetch-mode: cors" \
-          -H "sec-fetch-site: same-origin" \
           ${proof_token:+-H "openai-sentinel-proof-token: $proof_token"} \
-          ${turnstile_token:+-H "openai-sentinel-turnstile-token: $turnstile_token"} \
           --tls13-ciphers 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256' \
           --curves 'X25519:P-256' \
           --data "$body" \
@@ -1287,11 +1238,10 @@ usage() {
 Usage: $0 [-s] [-p "prompt"]
 
   -p "text" | "text"  One-shot mode: send this prompt and print the answer.
-  -s                  Streaming mode
+  -s                  Streaming mode (default is non-streaming).
   -r                  Session reset
   -f                  Force Tor IP rotation
   -t                  Rotate Tor IP and test tor connection
-  -x                  Kill Tor process
   -q                  Hide detailed logs
   -h                  Help.
 
@@ -1317,12 +1267,11 @@ TEST_MODE=0
 QUIET=0
 CMDLINE_=0
 SESSION_RESET=0
-TOR_RESET=0
 
 export conversation_id="$(cat $CONV_ID_FILE 2>/dev/null || echo -n '')"
 export parent_message_id="$(cat $PARENT_MSG_ID_FILE 2>/dev/null || echo -n '')"
 
-while getopts ":fasp:htqrx" opt; do
+while getopts ":fasp:htqr" opt; do
   case "$opt" in
     f) FORCE_TOR_ROTATION=1 ;;
     a) ANON=1 ;;
@@ -1331,7 +1280,6 @@ while getopts ":fasp:htqrx" opt; do
     p) PROMPT="$OPTARG" ;;
     t) TEST_MODE=1; echo "tor test" ;;
     r) SESSION_RESET=1 ;;
-    x) TOR_RESET=1 ;;
     h) usage; exit 0 ;;
     \?) echo "Unknown option: -$OPTARG" >&2; usage; exit 1 ;;
     :) echo "Option -$OPTARG requires an argument." >&2; exit 1 ;;
@@ -1349,10 +1297,6 @@ fi
 
 if [[ $TEST_MODE -eq 1 ]]; then
   check_tor
-fi
-
-if [[ $TOR_RESET -eq 1 ]]; then
-  kill $(pgrep -f tor) && echo tor process killed || echo error on killing tor process
 fi
 
 # Now enforce order manually:
