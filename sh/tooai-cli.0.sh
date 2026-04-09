@@ -11,11 +11,6 @@ LANG=UTF-8
 
 shopt -s expand_aliases
 
-
-# required dependency
-command -v jq >/dev/null 2>&1 || { echo "[!] jq is required but not installed." >&2; exit 1; }
-
-
 TMP_DIR=/tmp/tooai_/
 mkdir -p $TMP_DIR
 CONV_ID_FILE=${TMP_DIR}cid
@@ -359,37 +354,10 @@ make_requirements_token() {
   # 6 build(null), 7 lang, 8 langs, 9 elapsed_ms, 10 dwe(..., simplified),
   # 11.. etc simplified constants, 14 sid, etc. We only need a consistent shape.
   local json
-  json="$(
-    jq -cn \
-      --argjson screen_sum "$screen_sum" \
-      --arg date_str "$date_str" \
-      --arg ua "$(random_user_agent)" \
-      --arg lang "$lang" \
-      --arg langs "$langs" \
-      --argjson t0_ms "$t0_ms" \
-      --arg did "$did" \
-      '[
-        $screen_sum,
-        $date_str,
-        null,
-        0,
-        $ua,
-        null,
-        null,
-        $lang,
-        $langs,
-        0,
-        "nav-prop",
-        "doc-prop",
-        "win-prop",
-        $t0_ms,
-        $did,
-        "",
-        "",
-        0,
-        $t0_ms
-      ]'
-  )"
+  json=$(cat <<EOF
+[$screen_sum,"$date_str",null,0,"$(random_user_agent)",null,null,"$lang","$langs",0,"nav-prop","doc-prop","win-prop",${t0_ms},"$did","","",0,$t0_ms]
+EOF
+)
 
   # Base64(JSON) like TextEncoder->base64 (UTF-8). Our system base64 is fine.
   local b64
@@ -427,40 +395,10 @@ JSON
     local elapsed=$(( now - started_ms ))
     # construct array JSON with attempt at index 3 and elapsed at index 9
     local arr_json
-    arr_json="$(
-      jq -cn \
-        --argjson screen_sum "$screen_sum" \
-        --arg date_str "$date_str" \
-        --arg ua "$(random_user_agent)" \
-        --arg lang "$lang" \
-        --arg langs "$langs" \
-        --argjson attempt "$attempt" \
-        --argjson elapsed "$elapsed" \
-        --argjson now "$now" \
-        --arg device_id "$device_id" \
-        --argjson started_ms "$started_ms" \
-        '[
-          $screen_sum,
-          $date_str,
-          null,
-          $attempt,
-          $ua,
-          null,
-          null,
-          $lang,
-          $langs,
-          $elapsed,
-          "nav-prop",
-          "doc-prop",
-          "win-prop",
-          $now,
-          $device_id,
-          "",
-          "",
-          0,
-          $started_ms
-        ]'
-    )"
+    arr_json=$(cat <<EOF
+[$screen_sum,"$date_str",null,$attempt,"$(random_user_agent)",null,null,"$lang","$langs",$elapsed,"nav-prop","doc-prop","win-prop",$now,"$device_id","","",0,$started_ms]
+EOF
+)
     local b64; b64=$(printf '%s' "$arr_json" | b64_nolf)
     local candidate="$b64~S"
     local h; h=$(fnv1a_mix_hex8 "${seed}${b64}")
@@ -532,43 +470,9 @@ make_proof_token() {
     elapsed=$(( now - started_ms ))
 
     # inline JSON (avoid cat/heredocs)
-    arr_json="$(
-      jq -cn \
-        --argjson screen_sum "$screen_sum" \
-        --arg date_str "$date_str" \
-        --arg ua "$(random_user_agent)" \
-        --arg lang "$lang" \
-        --arg langs "$langs" \
-        --argjson attempt "$attempt" \
-        --argjson elapsed "$elapsed" \
-        --argjson now "$now" \
-        --arg device_id "$device_id" \
-        --argjson started_ms "$started_ms" \
-        '[
-          $screen_sum,
-          $date_str,
-          null,
-          $attempt,
-          $ua,
-          null,
-          null,
-          $lang,
-          $langs,
-          $elapsed,
-          "nav-prop",
-          "doc-prop",
-          "win-prop",
-          $now,
-          $device_id,
-          "",
-          "",
-          0,
-          $started_ms
-        ]'
-    )"
+    arr_json="[$screen_sum,\"$date_str\",null,$attempt,\"$(random_user_agent)\",null,null,\"$lang\",\"$langs\",$elapsed,\"nav-prop\",\"doc-prop\",\"win-prop\",$now,\"$device_id\",\"\",\"\",0,$started_ms]"
 
-    b64=$(printf '%s' "$arr_json" | base64 | tr -d '
-')
+    b64=$(printf '%s' "$arr_json" | base64 | tr -d '\n')
     candidate="$b64~S"
 
     h=$(fnv1a_mix_hex8 "${seed}${b64}")
@@ -629,12 +533,9 @@ bootstrap_session() {
 get_chat_requirements() {
   local req_token
   req_token="$(make_requirements_token "$OAI_DID")"
-  # echo
+  # echo 
   # echo $req_token  $OAI_CLIENT_VERSION  $(random_user_agent)  $OAI_DID  $COOKIE_JAR
-
-  local payload
-  payload="$(jq -cn --arg p "$req_token" '{p:$p}')"
-
+  
   curl \
   -sS -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
   ${ANON:+--socks5-hostname 127.0.0.1:9050} \
@@ -660,7 +561,7 @@ get_chat_requirements() {
   -H "origin: https://chatgpt.com" \
   --tls13-ciphers 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256' \
   --curves 'X25519:P-256' \
-  --data "$payload" \
+  --data "{\"p\":\"$req_token\"}" \
   "https://chatgpt.com/backend-anon/sentinel/chat-requirements"
 }
 
@@ -668,12 +569,9 @@ get_chat_requirements() {
 get_chat_requirements_prepare() {
   local req_token
   req_token="$(make_requirements_token "$OAI_DID")"
-  # echo
+  # echo 
   # echo $req_token  $OAI_CLIENT_VERSION  $(random_user_agent)  $OAI_DID  $COOKIE_JAR
-
-  local payload
-  payload="$(jq -cn --arg p "$req_token" '{p:$p}')"
-
+  
   curl \
   -sS -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
   ${ANON:+--socks5-hostname 127.0.0.1:9050} \
@@ -699,7 +597,7 @@ get_chat_requirements_prepare() {
   -H "origin: https://chatgpt.com" \
   --tls13-ciphers 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256' \
   --curves 'X25519:P-256' \
-  --data "$payload" \
+  --data "{\"p\":\"$req_token\"}" \
   "https://chatgpt.com/backend-anon/sentinel/chat-requirements/prepare"
 }
 get_finalize() {
@@ -707,16 +605,10 @@ get_finalize() {
   local proof_token=$2
   local turnstile_token=$3
 
-  local b
-  b="$(jq -cn \
-    --arg prepare_token "$prepare_token" \
-    --arg proofofwork "$proof_token" \
-    --arg turnstile "$turnstile_token" \
-    '{prepare_token:$prepare_token,proofofwork:$proofofwork,turnstile:$turnstile}'
-  )"
+  local b="{\"prepare_token\":\"$prepare_token\",\"proofofwork\":\"$proof_token\",\"turnstile\":\"$turnstile_token\"}"
   # echo $b
   # echo $req_token  $OAI_CLIENT_VERSION  $(random_user_agent)  $OAI_DID  $COOKIE_JAR
-
+  
   curl \
   -sS -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
   ${ANON:+--socks5-hostname 127.0.0.1:9050} \
@@ -742,75 +634,45 @@ get_finalize() {
   -H "origin: https://chatgpt.com" \
   --tls13-ciphers 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256' \
   --curves 'X25519:P-256' \
-  --data "$b" \
+  --data $b \
   "https://chatgpt.com/backend-anon/sentinel/chat-requirements/finalize"
 }
 
-# ---- extract JSON fields with jq (robust) ----
-json_get() { # $1=jq expression  (supports nested fields)
+# ---- extract JSON fields without jq (very light/fragile but works) ----
+json_get() { # $1=key  (first-level only, string value or simple)
   # reads from stdin
-  local expr="$1"
-  jq -r "$expr // empty" 2>/dev/null
+  awk -v key="\"$1\"" '
+    BEGIN{ RS=","; FS=":" }
+    { for(i=1;i<=NF;i++){
+        if($i~key){
+          # value may be after :
+          val=$(i+1)
+          # strip leading spaces
+          sub(/^[[:space:]]*/,"",val)
+          gsub(/\r|\n/,"",val)
+          print val
+          exit
+        }
+      }
+    }'
 }
 
 # pull nested: proofofwork":{"required":true,"seed":"...","difficulty":"..."}
-json_extract_seed()   { jq -r '.proofofwork.seed // empty' 2>/dev/null; }
-json_extract_diff()   { jq -r '.proofofwork.difficulty // empty' 2>/dev/null; }
-json_extract_required(){ jq -r 'if .proofofwork.required == null then empty else .proofofwork.required end' 2>/dev/null; }
+json_extract_seed()   { sed -n 's/.*"proofofwork"\s*:\s*{[^}]*"seed"\s*:\s*"\([^"]*\)".*/\1/p'; }
+json_extract_diff()   { sed -n 's/.*"proofofwork"\s*:\s*{[^}]*"difficulty"\s*:\s*"\([^"]*\)".*/\1/p'; }
+json_extract_required(){ sed -n 's/.*"proofofwork"\s*:\s*{[^}]*"required"\s*:\s*\(true\|false\).*/\1/p'; }
 
 # ---- build conversation POST body ----
 build_conv_body__() {
   local prompt="$1" conv_id="$2" parent_id="$3"
   local msg_id; msg_id="$(uuid_v4)"
   local now_s; now_s="$(date +%s)"
-  jq -cn \
-    --arg action "next" \
-    --arg msg_id "$msg_id" \
-    --argjson now_s "$now_s" \
-    --arg prompt "$prompt" \
-    --arg conv_id "$conv_id" \
-    --arg parent_id "${parent_id:-client-created-root}" \
-    --arg model "auto" \
-    --argjson timezone_offset_min "$TZ_OFFSET_MIN" \
-    --arg timezone "$TZ_NAME" \
-    '{
-      action:$action,
-      messages:[
-        {
-          id:$msg_id,
-          author:{role:"user"},
-          create_time:$now_s,
-          content:{content_type:"text",parts:[$prompt]},
-          metadata:{
-            selected_github_repos:[],
-            selected_all_github_repos:false,
-            serialization_metadata:{custom_symbol_offsets:[]}
-          }
-        }
-      ],
-      conversation_id:(if $conv_id == "" then null else $conv_id end),
-      parent_message_id:$parent_id,
-      model:$model,
-      timezone_offset_min:$timezone_offset_min,
-      timezone:$timezone,
-      history_and_training_disabled:true,
-      conversation_mode:{kind:"primary_assistant"},
-      enable_message_followups:true,
-      system_hints:[],
-      supports_buffering:true,
-      supported_encodings:["v1"],
-      client_contextual_info:{
-        is_dark_mode:true,
-        time_since_loaded:200,
-        page_height:800,
-        page_width:1200,
-        pixel_ratio:1,
-        screen_height:1080,
-        screen_width:1920
-      },
-      paragen_cot_summary_display_override:"allow",
-      force_parallel_switch:"auto"
-    }'
+  if [ "$conv_id" != "" ]; then
+    conv_id="\"${conv_id}\""
+  fi
+  cat <<EOF
+{"action":"next","messages":[{"id":"$msg_id","author":{"role":"user"},"create_time":$now_s,"content":{"content_type":"text","parts":["$(printf '%s' "$prompt" | sed 's/\\/\\\\/g; s/"/\\"/g')"]},"metadata":{"selected_github_repos":[],"selected_all_github_repos":false,"serialization_metadata":{"custom_symbol_offsets":[]}}}],"conversation_id":${conv_id:-null},"parent_message_id":"${parent_id:-client-created-root}","model":"auto","timezone_offset_min":$TZ_OFFSET_MIN,"timezone":"$TZ_NAME","history_and_training_disabled":true,"conversation_mode":{"kind":"primary_assistant"},"enable_message_followups":true,"system_hints":[],"supports_buffering":true,"supported_encodings":["v1"],"client_contextual_info":{"is_dark_mode":true,"time_since_loaded":200,"page_height":800,"page_width":1200,"pixel_ratio":1,"screen_height":1080,"screen_width":1920},"paragen_cot_summary_display_override":"allow","force_parallel_switch":"auto"}
+EOF
 }
 
 # ---- build conversation POST body (supports paths:: and b64::) ----
@@ -832,11 +694,9 @@ build_conv_body() {
 
     IFS="|" read -ra files <<<"$files_part"
 
-    local parts_tmp attachments_tmp
-    parts_tmp="$(mktemp "${TMP_DIR}parts.XXXXXX")"
-    attachments_tmp="$(mktemp "${TMP_DIR}attachments.XXXXXX")"
-    printf '[]' > "$parts_tmp"
-    printf '[]' > "$attachments_tmp"
+    local parts attachments
+    parts=""
+    attachments=""
     local idx=0
 
     echo uploading ${#files[@]} files... 1>&2
@@ -861,126 +721,81 @@ build_conv_body() {
 
       # Add part (for image/video)
       if [[ "$mime" =~ image|video ]]; then
-        jq -cn \
-          --argjson arr "$(cat "$parts_tmp")" \
-          --arg id "$id" \
-          --argjson size "$size" \
-          --arg w "$w" \
-          --arg h "$h" \
-          '$arr + [{
-            content_type:"image_asset_pointer",
-            asset_pointer:("file-service://" + $id),
-            size_bytes:$size
-          } + (if ($w|length) > 0 then {width:($w|tonumber)} else {} end)
-            + (if ($h|length) > 0 then {height:($h|tonumber)} else {} end)]' > "${parts_tmp}.new" && mv "${parts_tmp}.new" "$parts_tmp"
+        parts="${parts:+$parts,}{\"content_type\":\"image_asset_pointer\",\"asset_pointer\":\"file-service://$id\",\"size_bytes\":$size$( [[ -n "$w" ]] && printf ',\"width\":%s' "$w" )$( [[ -n "$h" ]] && printf ',\"height\":%s' "$h" )}"
       fi
 
       # Add attachment
-      jq -cn \
-        --argjson arr "$(cat "$attachments_tmp")" \
-        --arg id "$id" \
-        --argjson size "$size" \
-        --arg base "$base" \
-        --arg mime "$mime" \
-        --arg w "$w" \
-        --arg h "$h" \
-        '$arr + [{
-          id:$id,
-          size:$size,
-          name:$base,
-          mime_type:$mime,
-          source:"local"
-        } + (if ($w|length) > 0 then {width:($w|tonumber)} else {} end)
-          + (if ($h|length) > 0 then {height:($h|tonumber)} else {} end)]' > "${attachments_tmp}.new" && mv "${attachments_tmp}.new" "$attachments_tmp"
-
-      filenames+=("$base")
-      ((idx++))
+      attachments="${attachments:+$attachments,}{\"id\":\"$id\",\"size\":$size,\"name\":\"$base\",\"mime_type\":\"$mime\",\"source\":\"local\"$( [[ -n "$w" ]] && printf ',\"width\":%s' "$w" )$( [[ -n "$h" ]] && printf ',\"height\":%s' "$h" )}"
     done
 
-    # Prompt text part
-    local final_prompt="$text_part"
-    if [ "${#filenames[@]}" -gt 0 ]; then
-      local names_joined
-      names_joined=$(IFS=", "; echo "${filenames[*]}")
-      final_prompt="$text_part"
-      [[ -n "$final_prompt" ]] || final_prompt="Describe/analyze the uploaded file(s): $names_joined"
-    fi
-
-    jq -cn \
-      --argjson arr "$(cat "$parts_tmp")" \
-      --arg prompt "$final_prompt" \
-      '$arr + [$prompt]' > "${parts_tmp}.new" && mv "${parts_tmp}.new" "$parts_tmp"
-
-    parts_json="$(cat "$parts_tmp")"
-    attachments_json="$(cat "$attachments_tmp")"
-    rm -f "$parts_tmp" "$attachments_tmp"
-
+    # add the textual part last
+    local esc_prompt
+    esc_prompt="$(printf '%s' "$text_part" | sed 's/\\/\\\\/g; s/"/\\"/g')"
+    parts_json="[$parts${parts:+,}\"$esc_prompt\"]"
+    attachments_json="[${attachments}]"
     content_type="multimodal_text"
+
   else
-    parts_json="$(jq -cn --arg prompt "$prompt" '[$prompt]')"
-    attachments_json='[]'
+    # plain text
+    local esc_prompt
+    esc_prompt="$(printf '%s' "$prompt" | sed 's/\\/\\\\/g; s/"/\\"/g')"
+    parts_json="[\"$esc_prompt\"]"
+    attachments_json=""
     content_type="text"
   fi
 
-  jq -cn \
-    --arg msg_id "$msg_id" \
-    --argjson now_s "$now_s" \
-    --arg content_type "$content_type" \
-    --argjson parts_json "$parts_json" \
-    --argjson attachments_json "$attachments_json" \
-    --arg conv_id "$conv_id" \
-    --arg parent_id "${parent_id:-client-created-root}" \
-    --arg model "auto" \
-    --argjson timezone_offset_min "$TZ_OFFSET_MIN" \
-    --arg timezone "$TZ_NAME" \
-    '{
-      action:"next",
-      messages:[
-        {
-          id:$msg_id,
-          author:{role:"user"},
-          create_time:$now_s,
-          content:{content_type:$content_type,parts:$parts_json},
-          metadata:(
-            {
-              selected_github_repos:[],
-              selected_all_github_repos:false,
-              serialization_metadata:{custom_symbol_offsets:[]}
-            }
-            + (if ($attachments_json|length) > 0 then {attachments:$attachments_json} else {} end)
-          )
-        }
-      ],
-      conversation_id:(if $conv_id == "" then null else $conv_id end),
-      parent_message_id:$parent_id,
-      model:$model,
-      timezone_offset_min:$timezone_offset_min,
-      timezone:$timezone,
-      history_and_training_disabled:true,
-      conversation_mode:{kind:"primary_assistant"},
-      enable_message_followups:true,
-      system_hints:[],
-      supports_buffering:true,
-      supported_encodings:["v1"],
-      client_contextual_info:{
-        is_dark_mode:true,
-        time_since_loaded:200,
-        page_height:800,
-        page_width:1200,
-        pixel_ratio:1,
-        app_name:"chatgpt.com",
-        screen_height:1080,
-        screen_width:1920
-      },
-      paragen_cot_summary_display_override:"allow",
-      force_parallel_switch:"auto"
-    }'
+  attachments_obj=""
+  # echo $attachments_json III
+  
+  [[ -n "$attachments_json" ]] && attachments_obj="\"attachments\":"${attachments_json}","
+
+  # echo $attachments_json IV
+  # exit
+
+  [[ -n "$conv_id" ]] && conv_id="\"${conv_id}\""
+  cat <<EOF
+{"action":"next",
+ "messages":[
+   {"id":"$msg_id",
+    "author":{"role":"user"},
+    "create_time":$now_s,
+    "content":{"content_type":"$content_type","parts":$parts_json},
+    "metadata":{${attachments_obj}
+      "selected_github_repos":[],
+      "selected_all_github_repos":false,
+      "serialization_metadata":{"custom_symbol_offsets":[]}}
+   }
+ ],
+ "conversation_id":${conv_id:-null},
+ "parent_message_id":"${parent_id:-client-created-root}",
+ "model":"auto",
+ "timezone_offset_min":$TZ_OFFSET_MIN,
+ "timezone":"$TZ_NAME",
+ "history_and_training_disabled":true,
+ "conversation_mode":{"kind":"primary_assistant"},
+ "enable_message_followups":true,
+ "system_hints":[],
+ "supports_buffering":true,
+ "supported_encodings":["v1"],
+ "client_contextual_info":{
+   "is_dark_mode":true,
+   "time_since_loaded":200,
+   "page_height":800,
+   "page_width":1200,
+   "pixel_ratio":1,
+   "app_name":"chatgpt.com",
+   "screen_height":1080,
+   "screen_width":1920},
+ "paragen_cot_summary_display_override":"allow",
+ "force_parallel_switch":"auto"}
+EOF
+
 }
 
 # --- small JSON extractor ---
-json_extract() { # jq filter json
-  local filter="$1" json="$2"
-  printf '%s' "$json" | jq -r "$filter // empty" 2>/dev/null | head -n1
+json_extract() { # key json
+  local key="$1" json="$2"
+  echo "$json" | sed -n "s/.*\"$key\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\".*/\1/p" | head -n1
 }
 
 # --- MIME type ---
@@ -1002,11 +817,7 @@ upload_file() {
 
   # ---- 1. Request upload slot ----
   local req_json
-  req_json="$(jq -cn \
-    --arg file_name "$file_name" \
-    --argjson file_size "$size" \
-    '{file_name:$file_name,file_size:$file_size,use_case:"multimodal",timezone_offset_min:-120}'
-  )"
+  req_json=$(printf '{"file_name":"%s","file_size":%s,"use_case":"multimodal","timezone_offset_min":-120}' "$file_name" "$size")
 
   local upload_json
   upload_json="$(curl -sS -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
@@ -1038,8 +849,8 @@ upload_file() {
     "https://chatgpt.com/backend-anon/files")"
 
   local upload_url file_id
-  upload_url="$(json_extract '.upload_url' "$upload_json")"
-  file_id="$(json_extract '.file_id' "$upload_json")"
+  upload_url="$(json_extract upload_url "$upload_json")"
+  file_id="$(json_extract file_id "$upload_json")"
   [[ -z "$file_id" || -z "$upload_url" ]] && { echo "ERR|uploadmeta"; return 1; }
 
   # ---- 2. Upload binary to Azure blob ----
@@ -1057,11 +868,7 @@ upload_file() {
 
   # ---- 3. Finalize upload ----
   local finalize_json
-  finalize_json="$(jq -cn \
-    --arg file_id "$file_id" \
-    --arg file_name "$file_name" \
-    '{file_id:$file_id,use_case:"multimodal",index_for_retrieval:false,file_name:$file_name}'
-  )"
+  finalize_json=$(printf '{"file_id":"%s","use_case":"multimodal","index_for_retrieval":false,"file_name":"%s"}' "$file_id" "$file_name")
 
   curl -sS -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
     ${ANON:+--socks5-hostname 127.0.0.1:9050} \
@@ -1108,7 +915,8 @@ upload_file() {
 
 
 
-# ---- parse assistant text from SSE dump (heuristic) ----# ---- parse assistant text from SSE dump (heuristic) ----
+
+# ---- parse assistant text from SSE dump (heuristic) ----
 extract_final_text() {
   # Grab the last assistant "message" parts[0]
   # 1) keep only lines with "data:"
@@ -1169,76 +977,105 @@ decode_json_escapes() {
 }
 
 
+
 stream_tokens() {
 
   local temp=$parent_message_id
   parent_message_id=""
-  echo "$parent_message_id" > "$PARENT_MSG_ID_FILE"
+  echo $parent_message_id > $PARENT_MSG_ID_FILE
   local red=0
+    
+  
 
   while IFS= read -r line; do
-    [ "$red" -eq 0 ] && [ "$CMDLINE_" -eq 0 ] && echo -e -n "\b\b\b\b   \n"
+    [ $red -eq 0 ] && [ $CMDLINE_ -eq 0 ] && echo -e -n "\b\b\b\b   \n";
     ((red++))
-
-    new_id="$(printf '%s' "$line" | sed 's/^data:[[:space:]]*//' | jq -r '.conversation_id // empty' 2>/dev/null | head -n1)"
+    
+    # echo "$line"
+    # echo ============
+    new_id=$(echo "$line" | sed -En 's/.*"conversation_id": "([^"]+)".*/\1/p')
     if [[ -n "$new_id" && "$conversation_id" == "" ]]; then
       conversation_id="$new_id"
-      echo "$conversation_id" > "$CONV_ID_FILE"
+      echo $conversation_id > $CONV_ID_FILE
     fi
-
-    new_id="$(printf '%s' "$line" | sed 's/^data:[[:space:]]*//' | jq -r '.message_id // empty' 2>/dev/null | head -n1)"
+    new_id=$(echo "$line" | sed -En 's/.*"message_id": "([^"]+)".*/\1/p')
     if [[ -n "$new_id" && "$parent_message_id" == "" ]]; then
       parent_message_id="$new_id"
-      echo "$parent_message_id" > "$PARENT_MSG_ID_FILE"
+      echo $parent_message_id > $PARENT_MSG_ID_FILE
+      
     fi
+    # echo "$conversation_id" cid
+    # echo "$parent_message_id" pmi
 
-    {
-      payload="${line#data:}"
-      payload="$(printf '%s' "$payload" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')"
 
-      if [[ -z "$payload" || "$payload" == "[DONE]" || "$payload" == "v1" ]]; then
-        :
-      else
-        printf '%s' "$payload" | jq -c '
-          if (type != "object" and type != "array") then
-            empty
-          elif (tostring | test("\"parts\"[[:space:]]*:")) then
-            empty
-          else
-            .. | objects
-            | select(.o? == "append")
-            | .v?
-            | select(type == "string")
-          end
-        ' 2>/dev/null \
-        | awk '!seen[$0]++' \
-        | jq -jR 'fromjson?'
-      fi
-    } | {
+  printf '%s\n' "$line" | awk '
+  /^data:/ {
+    payload = substr($0, 6)
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", payload)
+
+    # Skip empty, [DONE], or metadata lines
+    if (payload == "" || payload == "[DONE]" || payload == "v1") next
+    if (payload !~ /^\{.*\}$/) next
+
+    # Skip prompt chunks
+    if (payload ~ /"parts"[[:space:]]*:[[:space:]]*\[/) next
+
+    # Case 1: simple {"o":"append","v":"..."}
+    if (match(payload, /"o"[[:space:]]*:[[:space:]]*"append"[[:space:]]*,[[:space:]]*"v"[[:space:]]*:[[:space:]]*"(([^"\\]|\\.)*)"/, m)) {
+      printf "%s", m[1]
+      fflush()
+      next
+    }
+
+    # Case 2: patch list [{"o":"append","v":"..."}...]
+    while (match(payload, /"o"[[:space:]]*:[[:space:]]*"append"[[:space:]]*,[[:space:]]*"v"[[:space:]]*:[[:space:]]*"(([^"\\]|\\.)*)"/, m)) {
+      printf "%s", m[1]
+      fflush()
+      payload = substr(payload, RSTART + RLENGTH)
+    }
+
+    # Case 3: message object with parts array
+    if (match(payload, /"parts"[[:space:]]*:[[:space:]]*\[([^\]]*)\]/, parts)) {
+      p = parts[1]
+      gsub(/["\\,]/, "", p)
+      printf "%s", p
+      fflush()
+      next
+    }
+
+    # Case 4: {"v":{"v":"text"}} or {"v":"text"}
+    while (match(payload, /"v"[[:space:]]*:[[:space:]]*"(([^"\\]|\\.)+)"/, mv)) {
+      v = mv[1]
+      if (v != "append" && v != "patch") {
+        printf "%s", v
+        fflush()
+      }
+      payload = substr(payload, RSTART + RLENGTH)
+    }
+  }
+' | {
+      # Here you can pipe chunk output to other commands live
       if [[ "$1" == "decode" ]]; then
-        cat | sed 's/finished_successfully//'
+        decode_json_escapes | sed s/finished_successfully//
+        # tee
       else
-        cat
+        tee
       fi
     }
   done
+  
 
-  if [ "$red" -lt 3 ]; then
-    parent_message_id="$temp"
-    echo "$parent_message_id" > "$PARENT_MSG_ID_FILE"
+
+  if [ $red -lt 3 ]; then
+    parent_message_id=$temp
+    echo $parent_message_id > $PARENT_MSG_ID_FILE
   fi
 }
 
-# ---- send request (core) ----# ---- send request (core) ----
+
+# ---- send request (core) ----
 send_request() {
   local prompt="$1" stream="$2"
-
-  if  [ "$AGENTIC" = "1" ]; then
-    echo agentic
-    prompt=$(agentic "$prompt")
-    # echo $prompt
-  fi
-  
   local started_ms; started_ms=$(now_ms)
 
   echo -e "\n[i] getting session cookies" 1>&2
@@ -1249,7 +1086,7 @@ send_request() {
   # 1) initial requirements
   local req_json; req_json="$(get_chat_requirements)"
   local is_force_login; is_force_login=$(echo "$req_json" | grep -o "force_login")
-
+  
   [ -n "$is_force_login" ] && echo "$is_force_login"
 
   local req_token;
@@ -1259,7 +1096,7 @@ send_request() {
 
   # 2) extract values helper
   extract_values() {
-    req_token=$(printf '%s' "$req_json" | jq -r '.token // empty' 2>/dev/null)
+    req_token=$(printf '%s' "$req_json" | sed -n 's/.*"token"\s*:\s*"\([^"]*\)".*/\1/p')
     pw_required=$(printf '%s' "$req_json" | json_extract_required)
     pw_seed=$(printf '%s' "$req_json" | json_extract_seed)
     pw_diff=$(printf '%s' "$req_json" | json_extract_diff)
@@ -1268,23 +1105,21 @@ send_request() {
   extract_values
 
   # 3) Turnstile token
-  local turnstile_token
-  turnstile_token="$(base64 </dev/urandom | tr -d '\n' | head -c 64)"
+  local turnstile_token="$(base64 </dev/urandom | tr -d '\n' | head -c 64)"
 
   # 4) Handle forced login flow once
   if false; then
     echo "[i] chat-requirements/prepare /finalize flow" 1>&2
-
+    
     req_json="$(get_chat_requirements_prepare)"
-    local prepare_token
-    prepare_token=$(printf '%s' "$req_json" | jq -r '.prepare_token // empty' 2>/dev/null)
+    local prepare_token=$(printf '%s' "$req_json" | sed -n 's/.*"prepare_token"\s*:\s*"\([^"]*\)".*/\1/p')
 
     extract_values  # refresh pw seed/diff for prepare call
     proof_token="$(make_proof_token "$pw_seed" "$pw_diff" "$started_ms" "$OAI_DID")"
 
     # finalize → tokens updated
     req_json="$(get_finalize "$prepare_token" "$proof_token" "$turnstile_token")"
-
+    
     is_force_login=$(echo "$req_json" | grep -o "force_login")
     [ -n "$is_force_login" ] && echo "$is_force_login"
 
@@ -1299,21 +1134,22 @@ send_request() {
     proof_token="$(make_proof_token "$pw_seed" "$pw_diff" "$started_ms" "$OAI_DID")"
   fi
 
+
+
   # 5) Build message body
   # local body; body="$(build_conv_body "$prompt" "" "")"
   # echo "$conversation_id" "$parent_message_id" cid pmi
-  local body
-  body="$(build_conv_body "$prompt" "$conversation_id" "$parent_message_id")"
+  
+  local body; body="$(build_conv_body "$prompt" "$conversation_id" "$parent_message_id")"
 
   # echo $body
   # exit
 
   echo [i] chat... 1>&2
+  
 
   # 5) hit conversation endpoint
   local url="https://chatgpt.com/backend-anon/f/conversation"
-  local llm_output=""
-  local output_file=""
 
   if [ "$stream" = "1" ]; then
     # STREAMING
@@ -1347,44 +1183,44 @@ send_request() {
     #     "$url" 2>&1
     #   )
 
-    fifo=$(mktemp "${TMP_DIR}fifo.XXXXXX")
-    rm "$fifo"
-    mkfifo "$fifo"
 
-    # trap 'rm -f "$fifo"; kill $(jobs -p) 2>/dev/null' EXIT
+      fifo=$(mktemp ${TMP_DIR}fifo.XXXXXX)
+      rm "$fifo"
+      mkfifo "$fifo"
 
-    output_file=$(mktemp "${TMP_DIR}llm-output.XXXXXX")
+      # trap 'rm -f "$fifo"; kill $(jobs -p) 2>/dev/null' EXIT
 
-    cat "$fifo" &
-    #en-US
-    stream_tokens "decode" < <(
-      curl -sS -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
-        ${ANON:+--socks5-hostname 127.0.0.1:9050} \
-        -A "$(random_user_agent)" \
-        -H "accept: text/event-stream" \
-        -H "content-type: application/json" \
-        -H "oai-client-version: $OAI_CLIENT_VERSION" \
-        -H "oai-device-id: $OAI_DID" \
-        -H "oai-language: it-IT" \
-        -H "referer: https://chatgpt.com/" \
-        -H "openai-sentinel-chat-requirements-token: $req_token" \
-        -H "sec-ch-ua-platform: \"Windows\"" \
-        -H "sec-ch-ua-mobile: ?0" \
-        -H "sec-ch-ua: \"Chromium\";v=\"142\", \"Google Chrome\";v=\"142\", \"Not_A Brand\";v=\"99\"" \
-        -H "sec-fetch-dest: empty" \
-        -H "sec-fetch-mode: cors" \
-        -H "sec-fetch-site: same-origin" \
-        ${proof_token:+-H "openai-sentinel-proof-token: $proof_token"} \
-        ${turnstile_token:+-H "openai-sentinel-turnstile-token: $turnstile_token"} \
-        --tls13-ciphers 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256' \
-        --curves 'X25519:P-256' \
-        --data "$body" \
-        "$url" 2>&1 | tee >(
-          grep -E '^(\{|[^a-zA-Z])' > "$fifo"
-        )
-    ) | tee "$output_file"
+      cat "$fifo" &
+      #en-US
+      stream_tokens "decode" < <(
+        curl -sS -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
+          ${ANON:+--socks5-hostname 127.0.0.1:9050} \
+          -A "$(random_user_agent)" \
+          -H "accept: text/event-stream" \
+          -H "content-type: application/json" \
+          -H "oai-client-version: $OAI_CLIENT_VERSION" \
+          -H "oai-device-id: $OAI_DID" \
+          -H "oai-language: it-IT" \
+          -H "referer: https://chatgpt.com/" \
+          -H "openai-sentinel-chat-requirements-token: $req_token" \
+          -H "sec-ch-ua-platform: \"Windows\"" \
+          -H "sec-ch-ua-mobile: ?0" \
+          -H "sec-ch-ua: \"Chromium\";v=\"142\", \"Google Chrome\";v=\"142\", \"Not_A Brand\";v=\"99\"" \
+          -H "sec-fetch-dest: empty" \
+          -H "sec-fetch-mode: cors" \
+          -H "sec-fetch-site: same-origin" \
+          ${proof_token:+-H "openai-sentinel-proof-token: $proof_token"} \
+          ${turnstile_token:+-H "openai-sentinel-turnstile-token: $turnstile_token"} \
+          --tls13-ciphers 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256' \
+          --curves 'X25519:P-256' \
+          --data "$body" \
+          "$url" 2>&1 | tee >(
+            grep -E '^(\{|[^a-zA-Z])' > "$fifo"
+          )
+      )
 
     
+
 
         #   curl -sS -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
         # ${ANON:+--socks5-hostname 127.0.0.1:9050} \
@@ -1402,9 +1238,7 @@ send_request() {
         # "$url"
 
     printf '\n'
-    llm_output="$(cat "$output_file")"
-
-    rm -f "$fifo" "$output_file"
+    
   else
     # NON-STREAMING: still SSE, but we collect and extract the final text
     # sse="$(curl -sS -N --location --compressed -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
@@ -1419,47 +1253,32 @@ send_request() {
     #   ${proof_token:+-H "openai-sentinel-proof-token: $proof_token"} \
     #   --data "$body" \
     #   "$url" | stream_tokens "x" | decode_json_escapes)"
-    llm_output="$(
-      stream_tokens "x" < <(
-        curl -sS -N --location --compressed \
-          -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
-          ${ANON:+--socks5-hostname 127.0.0.1:9050} \
-          -A "$(random_user_agent)" \
-          -H "accept: text/event-stream" \
-          -H "content-type: application/json" \
-          -H "oai-client-version: $OAI_CLIENT_VERSION" \
-          -H "oai-device-id: $OAI_DID" \
-          -H "oai-language: en-US" \
-          -H "openai-sentinel-chat-requirements-token: $req_token" \
-          --tls13-ciphers 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256' \
-          --curves 'X25519:P-256' \
-          ${proof_token:+-H "openai-sentinel-proof-token: $proof_token"} \
-          --data "$body" \
-          "$url"
-      ) | decode_json_escapes
-    )"
+      sse="$(
+    stream_tokens "x" < <(
+      curl -sS -N --location --compressed \
+        -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
+        ${ANON:+--socks5-hostname 127.0.0.1:9050} \
+        -A "$(random_user_agent)" \
+        -H "accept: text/event-stream" \
+        -H "content-type: application/json" \
+        -H "oai-client-version: $OAI_CLIENT_VERSION" \
+        -H "oai-device-id: $OAI_DID" \
+        -H "oai-language: en-US" \
+        -H "openai-sentinel-chat-requirements-token: $req_token" \
+        --tls13-ciphers 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256' \
+        --curves 'X25519:P-256' \
+        ${proof_token:+-H "openai-sentinel-proof-token: $proof_token"} \
+        --data "$body" \
+        "$url"
+    ) | decode_json_escapes
+  )"
 
-    # exit
-    # echo $url
-    printf '%s\n' "$llm_output"
-    # printf '%s\n' "$sse" | extract_final_text
+      # exit
+      # echo $url
+      printf '%s\n' "$sse" 
+      # printf '%s\n' "$sse" | extract_final_text
   fi
 
-  if [ "$AGENTIC" = "1" ] && [ -n "$llm_output" ]; then
-    printf '\n[i] run generated shell code? [y/N] ' 1>&2
-    read -r reply
-
-    case "$reply" in
-      y|Y|yes|YES)
-        printf '%s\n' "$llm_output" \
-        | tr -d '\b\r' \
-        | $SHELL
-        ;;
-      *)
-        echo "[i] skipped execution" 1>&2
-        ;;
-    esac
-  fi
 }
 
 # ---- CLI ----
@@ -1489,112 +1308,6 @@ session_reset() {
   echo $OAI_DID > $OAI_DID_FILE
   echo session reset 1>&2;
 }
-agentic() {
-  local user_prompt="$1"
-
-  agentic_prompt=$(cat <<AGENTIC
-You are a terminal coding agent.
-
-Your job is to satisfy the user's request by producing or modifying files in the current working directory.
-
-Context:
-- Current working directory: $(pwd)
-- OS: $(uname -a)
-- Shell: ${SHELL:-/bin/sh}
-- User: $(whoami)
-- Available tools: terminal, file read/write, mkdir, rm, compiler/interpreter if installed
-- Repository/files may already exist in the working directory
-
-Conversation Context Requirement:
-- This request is part of an ongoing conversation.
-- Previous user requests and previous assistant outputs are important context.
-- You must use prior conversation turns to resolve references such as:
-  - it
-  - that
-  - that file
-  - remove it
-  - undo that
-  - change it
-  - fix the previous file
-- Resolve such references to the most recent relevant file, command, artifact, or action mentioned or created in the conversation.
-- If multiple earlier targets are plausible, choose the most recent and most relevant one.
-- Do not ignore previous turns just because the current request is short.
-
-Critical Output Requirement:
-- Your output MUST be directly executable by a POSIX shell.
-- Your output will be passed verbatim to a shell interpreter.
-- Output ONLY raw shell commands.
-- Do NOT output explanations.
-- Do NOT output introductions.
-- Do NOT output reasoning.
-- Do NOT output commentary.
-- Do NOT output markdown.
-- Do NOT output code fences.
-- Do NOT output labels like "Here is", "I'll", "I will", "Output:", or "Command:".
-- Do NOT ask clarification questions.
-- Do NOT describe assumptions.
-- Do NOT include any text before the first shell command.
-- Do NOT include any text after the last shell command.
-- If you output anything that is not valid shell code, you have failed.
-
-Command-Only Policy:
-- The first character of your response must begin a shell command.
-- The last character of your response must belong to the shell command output.
-- Every line of your response must be valid POSIX shell syntax.
-- If the task requires creating files, use shell-safe constructs such as:
-  - cat <<'EOF' > file
-  - printf
-  - echo
-- Never emit prose like:
-  - "Since the request..."
-  - "I'll assume..."
-  - "If this is incorrect..."
-  - "Here's the Python equivalent..."
-
-Behavior:
-- Use conversation history first to resolve references.
-- If a prior file is the most likely target, act on it directly.
-- If ambiguity remains, choose the smallest reasonable interpretation and execute it.
-- Do not ask for clarification.
-- Do only the minimum work required.
-- Prefer creating or editing files over explaining.
-- Preserve existing files unless changing them is necessary.
-- Use relative paths when possible.
-- Avoid interactive commands.
-- Avoid unnecessary dependencies.
-- Stop immediately once the request is satisfied.
-
-Examples:
-
-Bad output:
-Since the request is to write a Python version of a previous file, I'll assume helloworld.c was meant.
-
-printf 'print("Hello, World!")\n' > helloworld.py
-
-Good output:
-printf 'print("Hello, World!")\n' > helloworld.py
-
-Bad output:
-Here is the command:
-rm -f helloworld.c
-
-Good output:
-rm -f helloworld.c
-
-Bad output:
-If this is incorrect, please clarify.
-
-Good output:
-rm -f helloworld.c
-
-Now satisfy the user's request using the full conversation context.
-
-Current user request:
-$user_prompt
-AGENTIC
-  )
-  printf '%s\n' "$agentic_prompt"
-}
 
 STREAM=1
 FORCE_TOR_ROTATION=0
@@ -1605,12 +1318,11 @@ QUIET=0
 CMDLINE_=0
 SESSION_RESET=0
 TOR_RESET=0
-AGENTIC=0
 
 export conversation_id="$(cat $CONV_ID_FILE 2>/dev/null || echo -n '')"
 export parent_message_id="$(cat $PARENT_MSG_ID_FILE 2>/dev/null || echo -n '')"
 
-while getopts ":fasp:htqrxg" opt; do
+while getopts ":fasp:htqrx" opt; do
   case "$opt" in
     f) FORCE_TOR_ROTATION=1 ;;
     a) ANON=1 ;;
@@ -1620,7 +1332,6 @@ while getopts ":fasp:htqrxg" opt; do
     t) TEST_MODE=1; echo "tor test" ;;
     r) SESSION_RESET=1 ;;
     x) TOR_RESET=1 ;;
-    g) AGENTIC=1 ;;
     h) usage; exit 0 ;;
     \?) echo "Unknown option: -$OPTARG" >&2; usage; exit 1 ;;
     :) echo "Option -$OPTARG requires an argument." >&2; exit 1 ;;
